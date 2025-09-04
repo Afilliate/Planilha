@@ -1,1473 +1,165 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SD Travel - Luxury Travel</title>
+    <title>Gerenciador de Foco e Produtividade para Universitários</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
-            font-family: 'Playfair Display', serif;
-            background-color: #1a1a1a;
-            color: #b3b3b3;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fff4; /* Verde suave */
+            color: #1a202c; /* Cinza escuro */
         }
-        .header-banner {
-            background-image: url('https://images.unsplash.com/photo-1502444330042-33821774f176?q=80&w=2670&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-            position: relative; 
+        .text-primary {
+            color: #2f855a; /* Verde mais escuro para destaque */
         }
-        .header-overlay {
-            background-color: rgba(0, 0, 0, 0.5);
-            width: 100%;
-            height: 100%;
+        .bg-primary {
+            background-color: #38a169; /* Verde para botões */
         }
-        .card {
-            transition: transform 0.3s, box-shadow 0.3s;
-            border: 1px solid transparent;
-            cursor: pointer;
+        .bg-secondary {
+            background-color: #d1f7e0; /* Verde mais claro */
         }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 18px rgba(0,0,0,0.5);
-            border: 1px solid #C0A05D;
-        }
-        .text-logo-gold {
-            color: #C0A05D;
-        }
-        .bg-logo-gold {
-            background-color: #C0A05D;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background-color: #1a1a1a;
-            padding: 20px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 800px;
-            position: relative;
-        }
-        .close-button {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #C0A05D;
-        }
-        .close-button:hover {
-            color: #FFD700;
-        }
-        .dropdown-menu {
-            display: none;
-            position: static;
-            background-color: transparent;
-            box-shadow: none;
-            z-index: auto;
-            min-width: unset;
-        }
-        .dropdown.open .dropdown-menu {
-            display: block;
-        }
-        @media (min-width: 768px) {
-            .dropdown:hover .dropdown-menu {
-                display: block;
-            }
-            .dropdown-menu {
-                position: absolute;
-                background-color: #262626;
-                min-width: 160px;
-                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-                z-index: 1;
-                top: 100%;
-                left: 0;
-            }
-        }
-        
-        #success-message {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            z-index: 100;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-        }
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-        }
-        .carousel-container {
-            position: relative;
-            overflow: hidden;
-            border-radius: 0.75rem;
-            height: 500px;
-            box-shadow: 0 10px 18px rgba(0,0,0,0.5);
-        }
-        .carousel-inner {
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-            height: 100%;
-            white-space: nowrap;
-        }
-        .carousel-item {
-            min-width: 100%;
-            height: 100%;
-            position: relative;
-            flex: 0 0 100%;
-            box-sizing: border-box;
-        }
-        .carousel-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .carousel-controls {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 1rem;
-            z-index: 10;
-        }
-        .carousel-control {
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            padding: 0.5rem;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background 0.3s;
-            font-size: 1.5rem;
-        }
-        .carousel-control:hover {
-            background: rgba(0, 0, 0, 0.8);
-        }
-        .carousel-dots {
-            position: absolute;
-            bottom: 1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 0.5rem;
-        }
-        .carousel-dot {
-            width: 12px;
-            height: 12px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .carousel-dot.active {
-            background: #C0A05D;
-        }
-
-        /* Styles for the new Travel Tips section */
-        .tip-banner {
-            display: flex;
-            flex-direction: column;
-            background-color: #222222;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease;
-            width: 100%;
-            max-width: 1000px;
-            margin-bottom: 2rem;
-            cursor: pointer;
-            /* Flexbox adjustment for no image */
-            justify-content: center;
-        }
-        .tip-banner:hover {
-            transform: translateY(-8px);
-        }
-        .tip-banner-content {
-            padding: 2rem;
-            text-align: left;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .tip-banner-title {
-            color: #C0A05D;
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        .tip-banner-description {
-            color: #b3b3b3;
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-        }
-        .card-divider {
-            width: 50px;
-            height: 3px;
-            background-color: #C0A05D;
-            margin-bottom: 1rem;
-        }
-        .read-more-btn {
-            background-color: #C0A05D;
-            color: #1a1a1a;
-            font-weight: bold;
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            transition: background-color 0.3s, transform 0.3s;
-            cursor: pointer;
-        }
-        .read-more-btn:hover {
-            background-color: #FFD700;
-            transform: scale(1.05);
-        }
-        .tip-detail-section {
-            background-color: #262626;
-            border-radius: 12px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .tip-detail-section h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #C0A05D;
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-        .tip-detail-section p {
-            line-height: 1.8;
-            color: #b3b3b3;
-            text-align: center;
-            max-width: 800px;
-            margin-bottom: 1.5rem;
-        }
-        .tip-detail-section .list-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            width: 100%;
-            max-width: 800px;
-            text-align: left;
-        }
-        .tip-detail-section .list-item {
-            display: flex;
-            align-items: flex-start;
-        }
-        .tip-detail-section .list-item h3 {
-            font-weight: bold;
-            color: #C0A05D;
-            margin-bottom: 0.5rem;
-            font-size: 1.5rem;
-        }
-        .tip-detail-section .list-item p {
-            margin-bottom: 0;
-            text-align: left;
-        }
-        .tip-detail-section .list-icon {
-            color: #C0A05D;
-            font-size: 1.5rem;
-            line-height: 1;
-            margin-right: 1rem;
-        }
-        .tip-detail-section .return-button-container {
-            margin-top: 2rem;
-            text-align: center;
-        }
-        .return-button {
-            background-color: #C0A05D;
-            color: #1a1a1a;
-            font-weight: bold;
-            padding: 0.75rem 2rem;
-            border-radius: 9999px;
-            transition: background-color 0.3s, transform 0.3s;
-            cursor: pointer;
-        }
-        .return-button:hover {
-            background-color: #FFD700;
-            transform: scale(1.05);
-        }
-        .hidden {
-            display: none;
-        }
-        
-        /* Styles for fixed social media buttons */
-        .social-buttons {
-            position: fixed;
-            bottom: 1rem;
-            right: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            z-index: 50;
-        }
-        .social-button {
-            background-color: #262626;
-            color: #C0A05D;
-            border-radius: 9999px;
-            padding: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            transition: background-color 0.3s, transform 0.3s, color 0.3s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .social-button:hover {
-            transform: scale(1.1);
-            background-color: #C0A05D;
-            color: #1a1a1a;
-        }
-        .social-button img {
-            width: 32px;
-            height: 32px;
-        }
-        /* Styles for the new Miles Advisory section */
-        .miles-advisory-section {
-            background-color: #262626; /* Background color from reference image, changed to match the site */
-            color: #b3b3b3;
-        }
-        .miles-advisory-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            padding: 2.5rem 1.5rem;
-            border-radius: 0.75rem;
-            border: 2px solid #C0A05D;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            align-items: center;
-            text-align: center;
-        }
-        .miles-advisory-title {
-            font-size: 2.25rem;
-            font-weight: 700;
-            line-height: 1.2;
-            color: white;
-        }
-        .miles-advisory-title span {
-            color: #C0A05D;
-        }
-        .miles-advisory-description {
-            font-size: 1.125rem;
-            max-width: 400px;
-        }
-        .miles-advisory-card {
-            background-color: #1a293f;
-            border: 1px solid #C0A05D;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            text-align: center;
-            height: 100%;
-        }
-        .miles-advisory-card p {
-            font-size: 1rem;
-            line-height: 1.5;
-            color: #b3b3b3;
-        }
-        .miles-advisory-image-container {
-            width: 100%;
-            height: auto;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            border: 1px solid #C0A05D;
-        }
-        .miles-advisory-image {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-        }
-
-        /* New classes for the Benefits section */
-        .select-miles-btn.active {
-            background-color: #C0A05D;
-            color: #1a1a1a;
-        }
-        .select-miles-btn:not(.active) {
-            background-color: #262626;
-            color: #C0A05D;
-            border: 1px solid #C0A05D;
-        }
-        .benefits-list-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.125rem;
-        }
-        .benefits-list-icon {
-            color: #C0A05D;
-        }
-
-        @media (min-width: 768px) {
-            .miles-advisory-content {
-                flex-direction: row;
-                text-align: left;
-                align-items: flex-start;
-                gap: 2rem;
-            }
-            .miles-advisory-text {
-                width: 40%;
-            }
-            .miles-advisory-card-container {
-                display: flex;
-                gap: 1.5rem;
-                width: 60%;
-                flex-grow: 1;
-            }
-            .miles-advisory-card {
-                flex: 1;
-            }
-        }
-        /* Mobile adjustments */
-        @media (max-width: 767px) {
-            .header-banner {
-                padding: 0; /* Remove padding from the banner itself */
-            }
-            .header-overlay {
-                padding: 1rem;
-            }
-            .text-4xl {
-                font-size: 2.5rem;
-            }
-            .text-2xl {
-                font-size: 1.5rem;
-            }
-            .text-xl {
-                font-size: 1rem;
-            }
-            .md\:flex-row {
-                flex-direction: column;
-            }
-            .md\:space-x-8 {
-                space-x: 0;
-            }
-            .md\:mt-0 {
-                margin-top: 1rem;
-            }
-            .md\:items-start {
-                align-items: center;
-            }
-            .md\:pr-8 {
-                padding-right: 0;
-            }
-            .card {
-                margin-bottom: 1rem;
-            }
-            .carousel-container {
-                height: 300px;
-            }
-            .social-buttons {
-                bottom: 0.5rem;
-                right: 0.5rem;
-            }
-            /* New classes for mobile navigation with transition */
-            .nav-mobile {
-                max-height: 0;
-                overflow: hidden;
-                transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
-                opacity: 0;
-            }
-            .nav-mobile-open {
-                max-height: 500px; /* A high value to ensure the entire menu fits */
-                opacity: 1;
-            }
-            .miles-advisory-content {
-                flex-direction: column;
-            }
-            .miles-advisory-card-container {
-                flex-direction: column;
-                gap: 1rem;
-            }
+        .shadow-lg-custom {
+            box-shadow: 0 10px 15px -3px rgba(56, 161, 105, 0.1), 0 4px 6px -2px rgba(56, 161, 105, 0.05);
         }
     </style>
 </head>
-<body class="bg-[#1a1a1a] text-[#b3b3b3]">
+<body class="bg-gray-50 flex flex-col min-h-screen">
 
-    <!-- Header - With lake image, navigation and gold text -->
-    <header class="header-banner text-white p-0 shadow-lg">
-        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none" style="z-index: 10;">
-            <path id="airplane-path" d="M -5 50 C 25 10, 75 90, 105 50" fill="none" stroke="transparent" />
-            <path id="traced-path" d="M -5 50 C 25 10, 75 90, 105 50" fill="none" stroke="#C0A05D" stroke-width="0.5" stroke-linecap="round" stroke-dasharray="2" />
-        </svg>
-        
-        <div class="header-overlay p-6 md:p-10 z-20 relative">
-            <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
-                <div class="flex items-center space-x-4">
-                    <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/imagem_2025-08-18_005838677_ijxuzc" alt="SD Travel Logo" class="h-12 w-auto">
-                    <h1 class="text-4xl font-bold text-logo-gold">SD Travel</h1>
-                </div>
-                <p class="mt-2 md:mt-0 text-lg md:text-xl text-center text-logo-gold">Find Your Next Adventure</p>
-
-                <button id="menu-button" class="md:hidden text-logo-gold text-2xl mt-4">☰</button>
-
-                <!-- Navigation menu - Now with link to Travel Tips -->
-                <!-- 'hidden' and 'flex' classes have been replaced for the new transition animation -->
-                <nav id="main-menu" class="nav-mobile md:flex flex-col md:flex-row md:space-x-8 mt-4 md:mt-0 items-center space-y-4 md:space-y-0">
-                    <a href="#" class="block w-full text-center text-white hover:text-logo-gold transition-colors duration-300 py-2 md:py-0" onclick="showHome()">Home</a>
-                    
-                    <div class="relative dropdown block w-full text-center">
-                        <a href="#" id="destinations-link" class="block w-full text-white hover:text-logo-gold transition-colors duration-300 py-2 md:py-0">Destinations</a>
-                        <div class="dropdown-menu">
-                            <a href="#" class="block px-4 py-2 text-white hover:bg-gray-700" onclick="showSection('brazil-section')">Brazil</a>
-                            <a href="#" class="block px-4 py-2 text-white hover:bg-gray-700" onclick="showSection('international-section')">International</a>
-                        </div>
-                    </div>
-                    
-                    <!-- Added link to the new Travel Tips section -->
-                    <a href="#" class="block w-full text-center text-white hover:text-logo-gold transition-colors duration-300 py-2 md:py-0" onclick="showSection('tips-section')">Travel Tips</a>
-                </nav>
+    <!-- Header / Hero Section -->
+    <header class="bg-primary text-white py-12 md:py-20 lg:py-24 text-center rounded-b-3xl">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight">
+                Cansado do Estresse do TCC e das Provas? 🤯
+            </h1>
+            <h2 class="mt-4 text-xl md:text-2xl lg:text-3xl font-light max-w-4xl mx-auto">
+                Pare de Adiar Tarefas e Assuma o Controle da Sua Vida Acadêmica. 🚀
+            </h2>
+            <div class="mt-8 md:mt-12">
+                <a href="#cta" class="inline-block bg-white text-primary font-bold text-lg md:text-xl px-8 py-4 rounded-full shadow-lg-custom transform transition hover:scale-105 hover:shadow-xl">
+                    Quero Tomar o Controle Agora! ✨
+                </a>
             </div>
         </div>
     </header>
 
-    <main class="container mx-auto p-4 md:p-8">
+    <!-- Problem Section -->
+    <section class="py-12 md:py-20 px-4">
+        <div class="container mx-auto max-w-3xl text-center">
+            <h3 class="text-2xl md:text-3xl font-bold text-gray-800">
+                Você já sentiu que está perdendo o controle? 🤔
+            </h3>
+            <p class="mt-4 text-lg text-gray-600 leading-relaxed">
+                Prazos que parecem impossíveis, uma lista de tarefas que só cresce e a sensação de que o estresse se tornou seu companheiro diário. A vida universitária é desafiadora, e a sobrecarga mental pode prejudicar seu desempenho e sua saúde.
+            </p>
+            <p class="mt-2 text-lg text-gray-600 leading-relaxed">
+                A boa notícia é que existe um caminho para uma jornada mais leve e produtiva. ✅
+            </p>
+        </div>
+    </section>
 
-        <!-- Main Home Section: Introduction and Carousel -->
-        <!-- 'hidden' has been removed so the section is the default -->
-        <section id="home-section" class="flex flex-col md:flex-row items-center justify-between py-12">
-            <div class="flex flex-col items-center text-center md:text-left md:items-start w-full md:w-1/2 md:pr-8 mb-8 md:mb-0">
-                <h2 class="text-4xl font-bold text-logo-gold mb-4">Is it time to rest, isn't it?</h2>
-                <p class="text-xl text-[#b3b3b3] mb-8 max-w-2xl">Explore our category and decide where you want to be!</p>
-                <h3 class="text-2xl font-semibold text-logo-gold mb-4">Your Next Adventure Awaits</h3>
-                <p class="text-lg text-[#b3b3b3] mb-8 max-w-3xl">At SD Travel, we create more than packages, we create memories. Each destination is carefully chosen and every detail is planned to offer a luxury experience and total tranquility. From paradise beaches in Brazil to breathtaking landscapes abroad, our goal is to exceed your expectations and turn your dreams into reality.</p>
-                <button onclick="showSection('brazil-section')" class="bg-logo-gold text-gray-900 py-3 px-6 rounded-lg font-bold hover:bg-opacity-90 transition-colors duration-300">
-                    Explore Destinations
-                </button>
-            </div>
-            
-            <div class="w-full md:w-1/2">
-                <div id="carousel-container" class="carousel-container">
-                    <div id="carousel-inner" class="carousel-inner">
-                        <div class="carousel-item">
-                            <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-jaime-reimer-1376930-2662116_qp91bo" alt="Moraine Lake with mountains and pine forest">
-                        </div>
-                        <div class="carousel-item">
-                            <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-miroalt-176400_luv0jl" alt="Paradise beach in Thailand">
-                        </div>
-                        <div class="carousel-item">
-                            <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-ken-cheung-3355734-5384149_n3wkzn" alt="Aurora borealis landscape in Iceland">
-                        </div>
-                        <div class="carousel-item">
-                            <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-david-bartus-43782-586687_qeohbt" alt="Streets of Venice, Italy">
-                        </div>
+    <!-- Solution Section -->
+    <section class="bg-secondary py-12 md:py-20 px-4 rounded-3xl">
+        <div class="container mx-auto max-w-5xl">
+            <h3 class="text-3xl md:text-4xl font-bold text-center text-gray-800">
+                Apresentamos o Gerenciador de Foco e Produtividade 🎓
+            </h3>
+            <p class="mt-4 text-center text-lg text-gray-600 max-w-3xl mx-auto">
+                Uma solução completa que combina a organização prática de uma planilha com um guia transformador, criado para o universitário brasileiro que busca excelência acadêmica e bem-estar.
+            </p>
+            <div class="mt-8 md:mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-2">
+                <!-- Product Card 1: Planilha -->
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg-custom flex flex-col items-center text-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-16 w-16 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-4m-2 4h4m6-4v4m-2-4h4m2 4h4M9 5h12M9 1h12M1 5h8v4H1z"/>
+                        </svg>
                     </div>
-                    
-                    <div class="carousel-controls">
-                        <button id="prev-button" class="carousel-control">&#10094;</button>
-                        <button id="next-button" class="carousel-control">&#10095;</button>
-                    </div>
-
-                    <div id="carousel-dots" class="carousel-dots"></div>
-                </div>
-                
-                <p id="image-caption" class="text-center mt-4 text-[#b3b3b3]"></p>
-            </div>
-        </section>
-
-        <!-- Popular Destinations Section: Now separated from the home section -->
-        <!-- 'hidden' has been removed so the section is the default on home -->
-        <section id="popular-destinations-section" class="py-12 w-full mt-12">
-            <h2 class="text-4xl font-bold text-center text-logo-gold mb-12">Popular Destinations</h2>
-
-            <!-- Popular Brazil -->
-            <div class="mb-16">
-                <h3 class="text-3xl font-bold text-center text-logo-gold mb-8">Popular Brazil</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Rio de Janeiro', 'Discover Rio de Janeiro, where the pulsating energy of the metropolis meets the natural beauty of legendary beaches and the majesty of Christ the Redeemer. A vibrant and unforgettable experience.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755541736/303_-_No_topo_do_Rio_Rio_de_Janeiro_-_Brasil_ujmwjm.mov')">
-                        <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-bertellifotografia-2868242_iu64es" alt="Rio de Janeiro beach with Sugarloaf Mountain in the background" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-2xl font-semibold text-logo-gold mb-2">Rio de Janeiro</h3>
-                            <p class="leading-relaxed">Feel the contagious energy of the Marvelous City...</p>
-                        </div>
-                    </div>
-
-                    <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Amazon', 'The world\'s largest rainforest invites you on a journey of discovery. Explore unique biodiversity, navigate mysterious rivers and immerse yourself in an ancestral culture.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755543255/V%C3%ADdeo_sem_t%C3%ADtulo_Feito_com_o_Clipchamp_g4zyxi.mp4')">
-                        <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-bkd--30133825_afjl9d" alt="Lush forest in the Amazon" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-2xl font-semibold text-logo-gold mb-2">Amazon</h3>
-                            <p class="leading-relaxed">Connect with nature in the world\'s largest tropical forest...</p>
-                        </div>
-                    </div>
-                    
-                    <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Fernando de Noronha', 'An ecological sanctuary in the middle of the Atlantic. Its golden sand beaches and exuberant marine life make this an incomparable diving destination. Exclusivity and natural beauty in one place.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755544252/V%C3%ADdeo_sem_t%C3%ADtulo_Feito_com_o_Clipchamp_2_cv0nqp.mp4')">
-                        <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-evandro-kluge-201796092-12271415_bqvqcr" alt="Beach in Fernando de Noronha with rocks and crystal clear sea" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-2xl font-semibold text-logo-gold mb-2">Fernando de Noronha</h3>
-                            <p class="leading-relaxed">An ecological paradise with pristine beaches and exuberant marine life...</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center mt-8">
-                    <button onclick="showSection('brazil-section')" class="bg-logo-gold text-gray-900 py-3 px-8 rounded-lg font-bold hover:bg-opacity-90 transition-colors duration-300">
-                        See More
-                    </button>
-                </div>
-            </div>
-
-            <!-- Popular International -->
-            <div>
-                <h3 class="text-3xl font-bold text-center text-logo-gold mb-8">Popular International</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Paris', 'Discover the City of Light, the heart of romance and art. Feel the history in every street, enjoy the cuisine in charming bistros and marvel at the grandeur of the Eiffel Tower and the Louvre.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755545000/112_-_Paris_Fran%C3%A7a_yzcape.mp4')">
-                        <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-hammyx-941416_lecniz" alt="Eiffel Tower in Paris" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-2xl font-semibold text-logo-gold mb-2">Paris</h3>
-                            <p class="leading-relaxed">The City of Light is an invitation to romance and art...</p>
-                        </div>
-                    </div>
-                    
-                    <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Tokyo', 'A unique fusion of tradition and future. Admire the serenity of ancient temples and immerse yourself in the chaotic and technological energy of modern neighborhoods. Tokyo is a journey for the senses.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755545880/100-As-belezas-de-To%CC%81quio_-To%CC%81quio-Japa%CC%83o_dvjeew.mp4')">
-                        <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-apasaric-2506923_gzarqk" alt="Tokyo street" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-2xl font-semibold text-logo-gold mb-2">Tokyo</h3>
-                            <p class="leading-relaxed">A fascinating metropolis that mixes tradition and modernity...</p>
-                        </div>
-                    </div>
-
-                    <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Santorini', 'A breathtaking refuge, with its iconic white houses and blue domes overlooking the Aegean Sea. Ideal for couples, it is the perfect setting for an unforgettable sunset and moments of pure tranquility.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755545005/108_-_Santorini_Gr%C3%A9cia_gdgrq1.mp4')">
-                        <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-pixabay-161815_tl4ixf" alt="Santorini village with white houses and blue domes" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-2xl font-semibold text-logo-gold mb-2">Santorini</h3>
-                            <p class="leading-relaxed">The postcard setting with white houses, blue domes and the most spectacular sunset in Greece...</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center mt-8">
-                    <button onclick="showSection('international-section')" class="bg-logo-gold text-gray-900 py-3 px-8 rounded-lg font-bold hover:bg-opacity-90 transition-colors duration-300">
-                        See More
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Testimonials Section -->
-        <section id="testimonials-section" class="py-12 w-full mt-12">
-            <h2 class="text-4xl font-bold text-center text-logo-gold mb-12">People who have traveled with us:</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Testimonial 1 -->
-                <div class="bg-[#262626] rounded-xl shadow-lg p-6 flex flex-col items-start space-y-4">
-                    <p class="leading-relaxed italic text-[#b3b3b3]">
-                        "The best decision I made was to travel with this agency! Everything was thought out in the smallest details. I felt safe, welcomed and had an experience that exceeded all my expectations. I will definitely travel with you again!"
+                    <h4 class="mt-4 text-xl font-bold text-gray-800">Planilha Inteligente e Intuitiva 📈</h4>
+                    <p class="mt-2 text-gray-600">
+                        Uma ferramenta visual e fácil de usar para organizar todas as suas tarefas. Com as categorias, prioridades e status, você nunca mais se sentirá perdido.
                     </p>
-                    <div class="flex items-center space-x-4 mt-4">
-                        <img src="https://vooperfeito.com.br/wp-content/uploads/2025/05/fc3b4420-92bf-4508-ae3f-68c8e783f96e.jpeg" alt="Photo of Mariana L." class="w-16 h-16 rounded-full object-cover border-2 border-logo-gold">
-                        <div>
-                            <p class="font-semibold text-lg text-logo-gold">Mariana L.</p>
-                        </div>
-                    </div>
                 </div>
-                <!-- Testimonial 2 -->
-                <div class="bg-[#262626] rounded-xl shadow-lg p-6 flex flex-col items-start space-y-4">
-                    <p class="leading-relaxed italic text-[#b3b3b3]">
-                        "I took my first international trip and was impressed with the organization and support I received. I felt safe from start to finish. It was, without a doubt, the best travel experience I've ever had."
+                <!-- Product Card 2: Guia em PDF -->
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg-custom flex flex-col items-center text-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-16 w-16 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.5v11M12 18a1 1 0 100-2 1 1 0 000 2zM9 13v-4M9 12a1 1 0 100-2 1 1 0 000 2zM15 13v-4M15 12a1 1 0 100-2 1 1 0 000 2z"/>
+                        </svg>
+                    </div>
+                    <h4 class="mt-4 text-xl font-bold text-gray-800">Guia em PDF - Como Evitar o Estresse 🧘‍♀️</h4>
+                    <p class="mt-2 text-gray-600">
+                        Um e-book com dicas práticas e insights baseados em ciência para combater a procrastinação e o estresse. O guia fala sobre o impacto da negatividade, o poder da gratidão e a importância do autocuidado.
                     </p>
-                    <div class="flex items-center space-x-4 mt-4">
-                        <img src="https://vooperfeito.com.br/wp-content/uploads/2025/05/bbf92ef5-a969-4271-bd55-f52268c69721.jpeg" alt="Photo of André C." class="w-16 h-16 rounded-full object-cover border-2 border-logo-gold">
-                        <div>
-                            <p class="font-semibold text-lg text-logo-gold">André C.</p>
-                        </div>
-                    </div>
                 </div>
-                <!-- Testimonial 3 -->
-                <div class="bg-[#262626] rounded-xl shadow-lg p-6 flex flex-col items-start space-y-4">
-                    <p class="leading-relaxed italic text-[#b3b3b3]">
-                        "Traveling is one of my passions, and this time it was even more special. The agency took care of everything: from comfortable flights to amazing accommodations. I just had to enjoy every moment. I recommend with my eyes closed!"
-                    </p>
-                    <div class="flex items-center space-x-4 mt-4">
-                        <img src="https://vooperfeito.com.br/wp-content/uploads/2025/05/a316f27a-ad3f-4b8c-b26f-e3af10c4a4e3-1.jpeg" alt="Photo of Fernanda S." class="w-16 h-16 rounded-full object-cover border-2 border-logo-gold">
-                        <div>
-                            <p class="font-semibold text-lg text-logo-gold">Fernanda S.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Start of New Section: Miles Benefits -->
-        <section id="miles-advisory-section" class="py-12 w-full mt-12">
-            <div class="miles-advisory-content mx-auto max-w-7xl">
-                <div class="miles-advisory-text flex-1">
-                    <h2 class="miles-advisory-title mb-4">How about traveling for up to <span class="text-logo-gold">90%</span> less with <br/> <span class="text-logo-gold">your own expenses</span>?</h2>
-                    <p class="miles-advisory-description">If you spend over R$ 10,000 per month and travel at least 2 times a year. The Miles Advisory is for you.</p>
-                </div>
-                <div class="miles-advisory-card-container flex-1">
-                    <div class="miles-advisory-card bg-transparent border-0 border-solid border-logo-gold rounded-none">
-                        <span class="text-6xl text-logo-gold">🗺️</span>
-                        <p>Business class at economy price is now possible.</p>
-                    </div>
-                    <div class="miles-advisory-image-container flex-1">
-                        <img src="https://vooperfeito.com.br/wp-content/uploads/2025/05/young-woman-using-phone-while-sitting-table-2-scaled-1-1024x684.jpg" alt="Woman in a first class airplane" class="miles-advisory-image w-full h-auto">
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- End of New Section: Miles Benefits -->
-
-        <!-- Start of New Section with Examples (based on image) -->
-        <section id="miles-benefits-section" class="py-12 w-full mt-12">
-            <div class="miles-benefits-content mx-auto max-w-7xl text-center">
-                <h2 class="text-4xl font-bold text-logo-gold mb-4">Discover the advantages your spending and card can offer:</h2>
-                <p class="text-lg text-[#b3b3b3] mb-8">Select your monthly credit card spending and see what you're missing...</p>
-                
-                <!-- Spending selection buttons -->
-                <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-8">
-                    <button class="select-miles-btn py-3 px-6 rounded-lg font-bold transition-colors duration-300" data-gasto="10k">Above R$ 10 thousand</button>
-                    <button class="select-miles-btn py-3 px-6 rounded-lg font-bold transition-colors duration-300" data-gasto="30k">Above R$ 30 thousand</button>
-                    <button class="select-miles-btn py-3 px-6 rounded-lg font-bold transition-colors duration-300" data-gasto="50k">Above R$ 50 thousand</button>
-                </div>
-
-                <!-- Benefits and Image Container -->
-                <div class="flex flex-col md:flex-row items-center md:items-start bg-[#262626] p-8 rounded-xl shadow-lg gap-8">
-                    <div class="w-full md:w-1/2">
-                        <img id="miles-image" src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-bertellifotografia-2868242_iu64es" alt="Sugarloaf Mountain, Rio de Janeiro" class="rounded-xl w-full h-auto object-cover border-2 border-logo-gold">
-                    </div>
-                    
-                    <div class="w-full md:w-1/2 flex flex-col items-start text-left">
-                        <ul id="benefits-list" class="space-y-4 text-left">
-                            <!-- Benefits will be injected here via JS -->
-                        </ul>
-                    </div>
-                <div class="text-center mt-10">
-      <a href="https://wa.me/5511976134095"
-         target="_blank"
-         class="bg-logo-gold text-gray-900 py-4 px-12 rounded-full text-lg font-bold shadow-lg hover:bg-opacity-90 hover:scale-105 transition-all duration-300 inline-block">
-        🚀 I WANT ADVISORY!
-      </a>
-    </div>
-        </section>
-        <!-- End of New Section with Examples -->
-
-        <!-- Brazil Destinations Section -->
-        <section id="brazil-section" class="grid grid-cols-1 md:grid-cols-3 gap-8 hidden">
-            <div class="md:col-span-3 text-center">
-                <h2 class="text-4xl font-bold text-logo-gold my-8">Destinations in Brazil</h2>
-            </div>
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Rio de Janeiro', 'Discover Rio de Janeiro, where the pulsating energy of the metropolis meets the natural beauty of legendary beaches and the majesty of Christ the Redeemer. A vibrant and unforgettable experience.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755541736/303_-_No_topo_do_Rio_Rio_de_Janeiro_-_Brasil_ujmwjm.mov')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-bertellifotografia-2868242_iu64es" alt="Rio de Janeiro beach with Sugarloaf Mountain in the background" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">Rio de Janeiro</h3>
-                    <p class="leading-relaxed">Feel the contagious energy of the Marvelous City, explore iconic beaches and climb to Christ the Redeemer for an unforgettable view.</p>
-                </div>
-            </div>
-
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Amazon', 'The world\'s largest rainforest invites you on a journey of discovery. Explore unique biodiversity, navigate mysterious rivers and immerse yourself in an ancestral culture.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755543255/V%C3%ADdeo_sem_t%C3%ADtulo_Feito_com_o_Clipchamp_g4zyxi.mp4')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-bkd--30133825_afjl9d" alt="Lush forest in the Amazon" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">Amazon</h3>
-                    <p class="leading-relaxed">Connect with nature in the world\'s largest tropical forest. A unique experience of biodiversity and local culture.</p>
-                </div>
-            </div>
-
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Salvador', 'Salvador is the soul of Brazil, where colonial history meets Afro-Brazilian culture. Walk through the colorful streets of Pelourinho, feel the joy of local rhythms and taste the enchanting cuisine.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755543420/17696122-uhd_3840_2160_30fps_uegfpx.mp4')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-braujardim-30495351_ie7aso" alt="Colorful houses of Pelourinho in Salvador" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">Salvador</h3>
-                    <p class="leading-relaxed">Immerse yourself in the rich history and vibrant culture of Salvador, the land of joy. Flavors, rhythms and colors that enchant the soul.</p>
-                </div>
-            </div>
-            
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Fernando de Noronha', 'An ecological sanctuary in the middle of the Atlantic. Its golden sand beaches and exuberant marine life make this an incomparable diving destination. Exclusivity and natural beauty in one place.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755544252/V%C3%ADdeo_sem_t%C3%ADtulo_Feito_com_o_Clipchamp_2_cv0nqp.mp4')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-evandro-kluge-201796092-12271415_bqvqcr" alt="Beach in Fernando de Noronha with rocks and crystal clear sea" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">Fernando de Noronha</h3>
-                    <p class="leading-relaxed">An ecological paradise with pristine beaches and exuberant marine life. Perfect for diving and contact with nature.</p>
-                </div>
-            </div>
-
-            <!-- Foz do Iguaçu URL corrected -->
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Foz do Iguaçu', 'The Iguaçu Falls are one of the greatest natural wonders of the planet. Feel the force and sound of the water, explore the surrounding forest and witness a spectacle of pure grandeur.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755545880/V%C3%ADdeo_sem_t%C3%ADtulo_Feito_com_o_Clipchamp_3_h1c57e.mp4')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-tatianeherder-2851515_beb4uv" alt="Iguaçu Falls with rainbow" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">Foz do Iguaçu</h3>
-                    <p class="leading-relaxed">Witness the force of nature at the majestic Iguaçu Falls. A spectacle of water and forest that impresses.</p>
-                </div>
-            </div>
-
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Gramado', 'Gramado is a European refuge in southern Brazil. Enjoy the charming architecture, cozy climate and gastronomy that celebrates flavors from around the world. Perfect for relaxing.', 'https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/Gemini_Generated_Image_sd1xswsd1xswsd1x_c2ddf0')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/Gemini_Generated_Image_sd1xswsd1xswsd1x_c2ddf0" alt="Gramado covered with snow or frost" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">Gramado</h3>
-                    <p class="leading-relaxed">A little piece of Europe in Brazil. With charming architecture, mild climate and film and gastronomy festivals.</p>
-                </div>
-            </div>
-            <!-- New button -->
-            <div class="md:col-span-3 text-center mt-8">
-                <button onclick="showSection('contact-form-section')" class="bg-logo-gold text-gray-900 py-3 px-8 rounded-lg font-bold hover:bg-opacity-90 transition-colors duration-300">
-                    Didn't find your destination? Contact us!
-                </button>
-            </div>
-        </section>
-
-        <!-- International Destinations Section -->
-        <section id="international-section" class="grid grid-cols-1 md:grid-cols-3 gap-8 hidden">
-            <div class="md:col-span-3 text-center">
-                <h2 class="text-4xl font-bold text-logo-gold my-8">International Destinations</h2>
-            </div>
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Paris', 'Discover the City of Light, the heart of romance and art. Feel the history in every street, enjoy the cuisine in charming bistros and marvel at the grandeur of the Eiffel Tower and the Louvre.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755545000/112_-_Paris_Fran%C3%A7a_yzcape.mp4')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-hammyx-941416_lecniz" alt="Eiffel Tower in Paris" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">Paris</h3>
-                    <p class="leading-relaxed">The City of Light is an invitation to romance and art. Stroll by the Eiffel Tower, explore the Louvre and enjoy charming cafés.</p>
-                </div>
-            </div>
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Tokyo', 'A unique fusion of tradition and future. Admire the serenity of ancient temples and immerse yourself in the chaotic and technological energy of modern neighborhoods. Tokyo is a journey for the senses.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755545880/100-As-belezas-de-To%CC%81quio_-To%CC%81quio-Japa%CC%83o_dvjeew.mp4')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-apasaric-2506923_gzarqk" alt="Tokyo street" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">Tokyo</h3>
-                    <p class="leading-relaxed">A fascinating metropolis that mixes tradition and modernity. Explore ancient temples and the futuristic technology of the Japanese capital.</p>
-                </div>
-            </div>
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Rome', 'Feel the grandeur of history at every corner of the Eternal City. Walk in the footsteps of gladiators at the Colosseum, throw a coin in the Trevi Fountain and enjoy authentic Italian cuisine.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755546200/V%C3%ADdeo_sem_t%C3%ADtulo_Feito_com_o_Clipchamp_1_pqjfef.mp4')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-regan-dsouza-1315522347-33420260_h9fdn0" alt="Colosseum in Rome at sunset" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">Rome</h3>
-                    <p class="leading-relaxed">The eternal city. Travel back in time with the history of the Colosseum, enjoy the gastronomy and vibrant atmosphere of Italian streets.</p>
-                </div>
-            </div>
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Santorini', 'A breathtaking refuge, with its iconic white houses and blue domes overlooking the Aegean Sea. Ideal for couples, it is the perfect setting for an unforgettable sunset and moments of pure tranquility.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755545005/108_-_Santorini_Gr%C3%A9cia_gdgrq1.mp4')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-pixabay-161815_tl4ixf" alt="Santorini village with white houses and blue domes" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">Santorini</h3>
-                    <p class="leading-relaxed">The postcard setting with white houses, blue domes and the most spectacular sunset in Greece. A romantic refuge.</p>
-                </div>
-            </div>
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('New York', 'The city that never sleeps offers an unparalleled experience. Feel the energy of Manhattan, find peace in Central Park and discover world-class art and culture around every corner. A complete urban adventure.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755545003/246_-_Estatua_da_Liberdade_New_York_-_Estados_Unidos_z7sbsu.mov')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-st-supreme-2148276282-33435991_mb0bkj" alt="Manhattan skyline with skyscrapers at night" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">New York</h3>
-                    <p class="leading-relaxed">The city that never sleeps. Explore the energy of Times Square, the tranquility of Central Park and the art of its museums.</p>
-                </div>
-            </div>
-            <div class="card bg-[#262626] rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300" onclick="openModal('Maldives', 'The pinnacle of luxury and relaxation. Enjoy overwater bungalows on turquoise waters, pristine white sand beaches and dive into a universe of vibrant marine life. Paradise on Earth.', 'https://res.cloudinary.com/dxphpupax/video/upload/v1755544999/113_-_Maldivas_zioywy.mp4')">
-                <img src="https://res.cloudinary.com/dxphpupax/image/upload/q_auto:best/pexels-asadphoto-1320684_gi7jks" alt="Overwater villas at a resort in the Maldives" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h3 class="text-2xl font-semibold text-logo-gold mb-2">Maldives</h3>
-                    <p class="leading-relaxed">A refuge of white sand beaches, crystal clear waters and overwater bungalows. The perfect destination to relax.</p>
-                </div>
-            </div>
-            <!-- New button -->
-            <div class="md:col-span-3 text-center mt-8">
-                <button onclick="showSection('contact-form-section')" class="bg-logo-gold text-gray-900 py-3 px-8 rounded-lg font-bold hover:bg-opacity-90 transition-colors duration-300">
-                    Didn't find your destination? Contact us!
-                </button>
-            </div>
-        </section>
-
-        <!-- Travel Tips Section (Updated content without images) -->
-        <section id="tips-section" class="py-12 hidden">
-            <h2 class="text-4xl font-bold text-center text-logo-gold mb-12">
-                Travel Tips
-            </h2>
-            <div class="flex flex-col items-center">
-                <!-- Tip 1: Local Cuisine -->
-                <div class="tip-banner" onclick="showSection('tip1')">
-                    <div class="tip-banner-content">
-                        <h3 class="tip-banner-title">Flavors of the World: Local Cuisine Tips</h3>
-                        <div class="card-divider"></div>
-                        <p class="tip-banner-description">
-                            Discover the soul of a destination through its gastronomy. Learn to find the best typical dishes and experience a true culinary adventure.
-                        </p>
-                        <button class="read-more-btn">Read More</button>
-                    </div>
-                </div>
-
-                <!-- Tip 2: Luggage Organization -->
-                <div class="tip-banner" onclick="showSection('tip2')">
-                    <div class="tip-banner-content">
-                        <h3 class="tip-banner-title">Smart Luggage: Guide to Organizing Your Baggage</h3>
-                        <div class="card-divider"></div>
-                        <p class="tip-banner-description">
-                            Learn to optimize your luggage to travel comfortably, without excess weight and with everything you need at hand.
-                        </p>
-                        <button class="read-more-btn">Read More</button>
-                    </div>
-                </div>
-
-                <!-- Tip 3: Trip Planning -->
-                <div class="tip-banner" onclick="showSection('tip3')">
-                    <div class="tip-banner-content">
-                        <h3 class="tip-banner-title">How to Plan the Perfect Trip</h3>
-                        <div class="card-divider"></div>
-                        <p class="tip-banner-description">
-                            Discover how to create an impeccable itinerary, manage your budget and choose the ideal destination for your next trip.
-                        </p>
-                        <button class="read-more-btn">Read More</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tip Content (updated and expanded) -->
-        <!-- Cuisine Tips -->
-        <section id="tip1" class="py-12 hidden">
-            <div class="tip-detail-section">
-                <h1>Flavors of the World: Dive into Local Cuisine</h1>
-                <p>
-                    Cuisine is one of the richest and most authentic ways to connect with a destination's culture. It tells the story of a people, their traditions and the flavors of the land. Prepare for an adventure that goes beyond the palate and explore the soul of each place through its gastronomy.
-                </p>
-                <div class="list-container">
-                    <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Try Street Food</h3>
-                            <p>The most authentic and delicious delicacies are often found at stalls, markets and fairs. Don't be afraid to try; street food offers a genuine taste of the city's daily life and is a social experience in itself. It's a way to eat well and cheaply, while mingling with locals.</p>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Visit Restaurants Off the Tourist Trail</h3>
-                            <p>While restaurants in tourist spots are convenient, the best culinary secrets are hidden in less explored neighborhoods. Research places frequented by locals, read specialized travel blogs or simply walk through side streets. Look for small establishments with menus in the local language – this is usually a good sign!</p>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Ask Locals for Recommendations</h3>
-                            <p>One of the best tips of all. Ask a taxi driver, hotel receptionist, vendor or local resident where they like to eat. They will take you to hidden gems and authentic experiences that you wouldn't find in a travel guide. Don't hesitate to ask about the region's typical dish.</p>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Take a Food Tour</h3>
-                            <p>There are tours focused on cuisine that take you to taste typical dishes in various establishments. It's a fun and organized way to learn the history behind the flavors, learn about local ingredients and discover places you wouldn't find on your own. Many of these tours are led by local guides passionate about their city's food.</p>
-                        </div>
-                    </div>
-                    <div class="return-button-container">
-                        <button class="return-button" onclick="showSection('tips-section')">Back to Tips</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Luggage Organization Tips -->
-        <section id="tip2" class="py-12 hidden">
-            <div class="tip-detail-section">
-                <h1>Smart Luggage: Travel Lighter and With More Style</h1>
-                <p>
-                    Well-organized luggage can make all the difference in your trip, saving time and stress. Traveling with the essentials and in an organized way allows you to focus on what really matters: the experience.
-                </p>
-                <div class="list-container">
-                    <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Make a List of Essential Items</h3>
-                            <p>Before anything, list what you really need for the trip. Consider the weather, duration, planned activities and any formal events. This prevents you from taking unnecessary items that only add weight to your luggage.</p>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Use the "Rolling" Method or Packing Cubes</h3>
-                            <p>Instead of folding clothes, roll them tightly. This technique saves a lot of space and minimizes wrinkles. Another valuable tip is to use packing cubes to separate your clothes by category (t-shirts, pants, underwear). This keeps everything tidy and makes it easier to access your belongings, preventing you from having to unpack your entire suitcase.</p>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Invest in Versatile Pieces</h3>
-                            <p>Opt for clothes that can be combined in multiple ways. Neutral colors and basic pieces are excellent for creating multiple looks with fewer items. Bring a jacket or coat that goes with everything and doesn't take up much space.</p>
-                        </div>
-                    </div>
-                     <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Utilize Internal Space</h3>
-                            <p>Use the inside of your shoes to store socks, belts or other small items. Place jewelry in small boxes or plastic bags to prevent loss or tangling. Use travel-sized bottles for shampoos and conditioners, and always place them in a plastic bag to avoid leaks.</p>
-                        </div>
-                    </div>
-                    <div class="return-button-container">
-                        <button class="return-button" onclick="showSection('tips-section')">Back to Tips</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Planning Tips -->
-        <section id="tip3" class="py-12 hidden">
-            <div class="tip-detail-section">
-                <h1>Complete Guide: Planning Your Dream Trip</h1>
-                <p>
-                    Planning is the key to an unforgettable and stress-free trip. By taking time to organize the details, you ensure that every moment of your trip is pure joy, without surprises.
-                </p>
-                <div class="list-container">
-                    <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Choose Your Destination Carefully</h3>
-                            <p>Start by defining the type of experience you're looking for. Adventure in nature? Beach relaxation? Cultural immersion in the city? Research places that align with your desires and budget. Also consider the best time of year to visit, avoiding high season to save or low season to enjoy better.</p>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Set the Budget and Make a Financial Plan</h3>
-                            <p>Create a detailed spreadsheet with cost estimates for flights, accommodation, food, local transportation, tours and shopping. Research average prices and remember to include a reserve for unexpected expenses. Set a daily value for food and transportation to have more financial control.</p>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Create a Detailed but Flexible Itinerary</h3>
-                            <p>Organize a daily schedule with the tourist spots you want to visit, opening hours and the best way to get to each one. However, remember to be flexible; the beauty of a trip is also in the surprises and the ability to explore without rush. Consider scheduling tours and tickets in advance to avoid lines and guarantee your spot.</p>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <span class="list-icon">&#x2713;</span>
-                        <div>
-                            <h3>Documents and Reservations</h3>
-                            <p>Don't forget to check the validity of your passport and visa if necessary. Make copies of all your important documents and keep them in a safe place. Confirm all your flight and accommodation reservations in advance and keep the confirmations in an easily accessible place, such as a digital folder or a travel organization app.</p>
-                        </div>
-                    </div>
-                    <div class="return-button-container">
-                        <button class="return-button" onclick="showSection('tips-section')">Back to Tips</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Contact Form Section -->
-        <section id="contact-form-section" class="bg-[#262626] rounded-xl shadow-lg p-8 mt-12 max-w-2xl mx-auto hidden">
-            <h2 class="text-3xl font-bold text-center text-logo-gold mb-6">Your Next Adventure Awaits...</h2>
-            <p class="text-center text-[#b3b3b3] mb-6">Receive the best offers and exclusive travel tips directly in your inbox!</p>
-            
-            <!-- The form has been modified to be submitted via JavaScript, without the page reload action -->
-            <form id="contact-form" class="space-y-6">
-                <!-- Added a hidden field for the email subject, required for FormSubmit -->
-                <input type="hidden" name="_subject" value="New SD Travel Subscription">
-                <div>
-                    <label for="name" class="block text-sm font-medium text-[#b3b3b3] mb-1">Name</label>
-                    <input type="text" id="name" name="name" class="w-full px-4 py-2 border border-[#444] bg-[#333] rounded-lg focus:ring-logo-gold focus:border-logo-gold text-[#e0e0e0]" required>
-                </div>
-                
-                <div>
-                    <label for="email" class="block text-sm font-medium text-[#b3b3b3] mb-1">Email</label>
-                    <input type="email" id="email" name="email" class="w-full px-4 py-2 border border-[#444] bg-[#333] rounded-lg focus:ring-logo-gold focus:border-logo-gold text-[#e0e0e0]" required>
-                </div>
-
-                <div>
-                    <label for="phone" class="block text-sm font-medium text-[#b3b3b3] mb-1">Phone</label>
-                    <input type="tel" id="phone" name="phone" placeholder="(xx) xxxxx-xxxx" class="w-full px-4 py-2 border border-[#444] bg-[#333] rounded-lg focus:ring-logo-gold focus:border-logo-gold text-[#e0e0e0]" required>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="departure-date" class="block text-sm font-medium text-[#b3b3b3] mb-1">Departure Date</label>
-                        <input type="date" id="departure-date" name="departure-date" class="w-full px-4 py-2 border border-[#444] bg-[#333] rounded-lg focus:ring-logo-gold focus:border-logo-gold text-[#e0e0e0]" required>
-                    </div>
-                    <div>
-                        <label for="return-date" class="block text-sm font-medium text-[#b3b3b3] mb-1">Return Date</label>
-                        <input type="date" id="return-date" name="return-date" class="w-full px-4 py-2 border border-[#444] bg-[#333] rounded-lg focus:ring-logo-gold focus:border-logo-gold text-[#e0e0e0]" required>
-                    </div>
-                </div>
-
-                <div>
-                    <label for="num-people" class="block text-sm font-medium text-[#b3b3b3] mb-1">Number of People</label>
-                    <input type="number" id="num-people" name="num-people" min="1" class="w-full px-4 py-2 border border-[#444] bg-[#333] rounded-lg focus:ring-logo-gold focus:border-logo-gold text-[#e0e0e0]" required>
-                </div>
-
-                <div>
-                    <label for="travel-class" class="block text-sm font-medium text-[#b3b3b3] mb-1">Desired Travel Class</label>
-                    <select id="travel-class" name="travel-class" class="w-full px-4 py-2 border border-[#444] bg-[#333] rounded-lg focus:ring-logo-gold focus:border-logo-gold text-[#e0e0e0]" required>
-                        <option value="economy">Economy</option>
-                        <option value="premium-economy">Premium Economy</option>
-                        <option value="business">Business</option>
-                        <option value="first-class">1st Class</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label for="message" class="block text-sm font-medium text-[#b3b3b3] mb-1">Message (Optional)</label>
-                    <textarea id="message-input" name="message" rows="4" class="w-full px-4 py-2 border border-[#444] bg-[#333] rounded-lg focus:ring-logo-gold focus:border-logo-gold text-[#e0e0e0]"></textarea>
-                </div>
-                
-                <button type="submit" class="w-full bg-logo-gold text-gray-900 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-colors duration-300">
-                    Send Registration
-                </button>
-            </form>
-            
-            <div class="return-button-container mt-4">
-                <button class="return-button" onclick="showHome()">Back to Home</button>
-            </div>
-        </section>
-
-        <!-- Modal to display destination details -->
-        <div id="destination-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-button" onclick="closeModal()">&times;</span>
-                <h2 id="modal-title" class="text-3xl font-bold text-logo-gold mb-4"></h2>
-                <p id="modal-description" class="text-center text-[#b3b3b3] mb-6"></p>
-                <div id="modal-video-container" class="mt-4 rounded-lg overflow-hidden aspect-video"></div>
-                <button id="modal-reserve-button" class="w-full bg-logo-gold text-gray-900 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-colors duration-300 mt-6">
-                    Reserve
-                </button>
             </div>
         </div>
+    </section>
 
-        <div id="success-message" class="hidden">Form filled successfully!</div>
-    </main>
-    
-    <!-- Fixed social media buttons - Now with logos -->
-    <div class="social-buttons">
-        <a href="https://wa.me/5511976134095" target="_blank" class="social-button" aria-label="WhatsApp">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp logo">
-        </a>
-        <a href="https://www.instagram.com/sdviagens?igsh=cG5weDRudWVma2l1" target="_blank" class="social-button" aria-label="Instagram">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram logo">
-        </a>
-    </div>
+    <!-- Benefits Section -->
+    <section class="py-12 md:py-20 px-4">
+        <div class="container mx-auto max-w-3xl text-center">
+            <h3 class="text-3xl md:text-4xl font-bold text-gray-800">
+                As Vantagens do Nosso Pacote 🏆
+            </h3>
+            <div class="mt-8 md:mt-12 grid gap-6 md:grid-cols-3">
+                <div class="flex flex-col items-center">
+                    <svg class="h-12 w-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <h4 class="mt-3 text-lg font-semibold text-gray-800">Fim da Procrastinação ⚡️</h4>
+                    <p class="mt-1 text-gray-600">
+                        Utilize a Matriz de Eisenhower para priorizar suas tarefas e a Técnica Pomodoro para manter o foco.
+                    </p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <svg class="h-12 w-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h4 class="mt-3 text-lg font-semibold text-gray-800">Mais Tempo Livre ⏰</h4>
+                    <p class="mt-1 text-gray-600">
+                        Quando sua rotina é organizada, você ganha tempo para o que realmente importa, como lazer e autocuidado.
+                    </p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <svg class="h-12 w-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m-9-3a9 9 0 1118 0 9 9 0 01-18 0z" />
+                    </svg>
+                    <h4 class="mt-3 text-lg font-semibold text-gray-800">Menos Estresse 😌</h4>
+                    <p class="mt-1 text-gray-600">
+                        Aprenda a combater a negatividade e o estresse com base em princípios da psicologia positiva e do autocuidado.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <footer class="bg-[#121212] text-gray-400 text-center py-4 mt-8">
-        <p>&copy; 2025 SD Travel. All rights reserved.</p>
+    <!-- CTA Section -->
+    <section id="cta" class="bg-primary py-12 md:py-20 px-4 text-center rounded-t-3xl">
+        <div class="container mx-auto">
+            <h3 class="text-3xl md:text-4xl font-extrabold text-white">
+                Não Deixe o Estresse Vencer Você.
+            </h3>
+            <p class="mt-4 text-lg md:text-xl text-white">
+                Tome o controle da sua jornada universitária agora e transforme seu caos em foco e produtividade. 🎯
+            </p>
+            <div class="mt-8 md:mt-10">
+                <a href="https://pay.kiwify.com.br/CDXNgQo" class="inline-block bg-white text-primary font-bold text-lg md:text-xl px-8 py-4 rounded-full shadow-lg-custom transform transition hover:scale-105 hover:shadow-xl">
+                    Quero Me Organizar Agora! 🚀
+                </a>
+            </div>
+            <p class="mt-4 text-sm text-white">
+                Garantia de Satisfação de 7 Dias!
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-6 px-4 text-center text-gray-600 text-sm">
+        <p>&copy; 2025 Gerenciador de Produtividade. Todos os direitos reservados.</p>
     </footer>
 
-    <script>
-        const tracedPath = document.getElementById('traced-path');
-        const pathLength = tracedPath.getTotalLength();
-
-        tracedPath.style.strokeDasharray = pathLength;
-        tracedPath.style.strokeDashoffset = pathLength;
-
-        const animationDuration = '10s';
-
-        const dashAnimation = tracedPath.animate([
-            { strokeDashoffset: pathLength },
-            { strokeDashoffset: 0 }
-        ], {
-            duration: parseFloat(animationDuration) * 1000,
-            iterations: Infinity,
-            easing: 'linear'
-        });
-
-        // New function to display the complete main page (home + popular destinations)
-        function showHome() {
-            const allSections = document.querySelectorAll('main section');
-            allSections.forEach(section => {
-                section.classList.add('hidden');
-            });
-            document.getElementById('home-section').classList.remove('hidden');
-            document.getElementById('popular-destinations-section').classList.remove('hidden');
-            document.getElementById('testimonials-section').classList.remove('hidden');
-            document.getElementById('miles-advisory-section').classList.remove('hidden');
-            document.getElementById('miles-benefits-section').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Function to show other specific sections
-        function showSection(sectionId) {
-            const allSections = document.querySelectorAll('main section');
-            allSections.forEach(section => {
-                section.classList.add('hidden');
-            });
-
-            const targetSection = document.getElementById(sectionId);
-            if (targetSection) {
-                targetSection.classList.remove('hidden');
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        
-        function goToContactForm(destinationName) {
-            showSection('contact-form-section');
-
-            const contactFormSection = document.getElementById('contact-form-section');
-            const messageInput = document.getElementById('message-input');
-            
-            contactFormSection.scrollIntoView({ behavior: 'smooth' });
-
-            messageInput.value = `I want to reserve a trip to ${destinationName}.`;
-            
-            messageInput.focus();
-        }
-
-        function openModal(destinationName, destinationDescription, videoUrl) {
-            const modal = document.getElementById('destination-modal');
-            const modalTitle = document.getElementById('modal-title');
-            const modalDescription = document.getElementById('modal-description');
-            const modalReserveButton = document.getElementById('modal-reserve-button');
-            const videoContainer = document.getElementById('modal-video-container');
-
-            modalTitle.textContent = destinationName;
-            modalDescription.textContent = destinationDescription;
-            
-            videoContainer.innerHTML = '';
-            
-            let videoElement;
-            if (videoUrl.endsWith('.mp4') || videoUrl.endsWith('.webm') || videoUrl.endsWith('.ogg') || videoUrl.endsWith('.mov')) {
-                videoElement = document.createElement('video');
-                videoElement.src = videoUrl;
-                videoElement.controls = true;
-                videoElement.loop = true;
-                videoElement.autoplay = true;
-                videoElement.muted = true;
-            } else {
-                videoElement = document.createElement('iframe');
-                videoElement.src = videoUrl;
-                videoElement.allowFullscreen = true;
-            }
-
-            videoElement.className = 'w-full h-full';
-            
-            videoContainer.appendChild(videoElement);
-
-            modalReserveButton.onclick = function() {
-                closeModal();
-                goToContactForm(destinationName);
-            };
-
-            modal.style.display = 'flex';
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('destination-modal');
-            const videoContainer = document.getElementById('modal-video-container');
-
-            videoContainer.innerHTML = '';
-            modal.style.display = 'none';
-        }
-        
-        // New event for menu button: adds/removes animation class
-        const menuButton = document.getElementById('menu-button');
-        const mainMenu = document.getElementById('main-menu');
-
-        menuButton.addEventListener('click', () => {
-            mainMenu.classList.toggle('nav-mobile-open');
-        });
-        
-        // Add listener to close menu when clicking a link
-        mainMenu.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A') {
-                mainMenu.classList.remove('nav-mobile-open');
-            }
-        });
-
-        document.getElementById('destinations-link').addEventListener('click', (e) => {
-            if (window.innerWidth < 768) {
-                e.preventDefault();
-                const dropdown = e.currentTarget.closest('.dropdown');
-                dropdown.classList.toggle('open');
-            }
-        });
-        
-        // --- Carousel Logic ---
-        const carouselInner = document.getElementById('carousel-inner');
-        const prevButton = document.getElementById('prev-button');
-        const nextButton = document.getElementById('next-button');
-        const dotsContainer = document.getElementById('carousel-dots');
-        const imageCaption = document.getElementById('image-caption');
-        
-        const captions = [
-            "Moraine Lake with mountains and pine forest",
-            "Paradise beach in Thailand",
-            "Aurora borealis landscape in Iceland",
-            "Streets of Venice, Italy"
-        ];
-        
-        let currentIndex = 0;
-        const totalItems = carouselInner.children.length;
-        let autoSlideInterval;
-        
-        function createDots() {
-            for (let i = 0; i < totalItems; i++) {
-                const dot = document.createElement('div');
-                dot.classList.add('carousel-dot');
-                dot.addEventListener('click', () => {
-                    currentIndex = i;
-                    updateCarousel();
-                });
-                dotsContainer.appendChild(dot);
-            }
-        }
-        
-        function updateCarousel() {
-            const offset = -currentIndex * 100;
-            carouselInner.style.transform = `translateX(${offset}%)`;
-            
-            document.querySelectorAll('.carousel-dot').forEach((dot, index) => {
-                if (index === currentIndex) {
-                    dot.classList.add('active');
-                } else {
-                    dot.classList.remove('active');
-                }
-            });
-            
-            imageCaption.textContent = captions[currentIndex];
-        }
-        
-        function showNextSlide() {
-            currentIndex = (currentIndex + 1) % totalItems;
-            updateCarousel();
-        }
-        
-        function showPrevSlide() {
-            currentIndex = (currentIndex - 1 + totalItems) % totalItems;
-            updateCarousel();
-        }
-        
-        function startAutoSlide() {
-            stopAutoSlide(); // To avoid creating multiple intervals
-            autoSlideInterval = setInterval(showNextSlide, 2000);
-        }
-        
-        function stopAutoSlide() {
-            clearInterval(autoSlideInterval);
-        }
-        
-        prevButton.addEventListener('click', () => {
-            stopAutoSlide();
-            showPrevSlide();
-            startAutoSlide();
-        });
-
-        nextButton.addEventListener('click', () => {
-            stopAutoSlide();
-            showNextSlide();
-            startAutoSlide();
-        });
-
-        // --- Enhanced form submission logic ---
-        const contactForm = document.getElementById('contact-form');
-        const successMessage = document.getElementById('success-message');
-        const contactFormSection = document.getElementById('contact-form-section');
-
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Prevents default form submission
-            
-            // Get form data
-            const form = e.target;
-            const formData = new FormData(form);
-            const formObject = {};
-            formData.forEach((value, key) => {
-                formObject[key] = value;
-            });
-            
-            try {
-                const response = await fetch(
-                    'https://formsubmit.co/ajax/sd1viagens@gmail.com', // FormSubmit submission URL
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify(formObject),
-                    }
-                );
-
-                if (response.ok) {
-                    // If submission is successful, show message and clear form
-                    showMessage('Form filled successfully!');
-                    form.reset();
-                } else {
-                    // If there's an error, show error message
-                    showMessage('An error occurred. Please try again later.', true);
-                }
-            } catch (error) {
-                // In case of network error, show error message
-                showMessage('A network error occurred. Check your connection and try again.', true);
-            }
-        });
-        
-        function showMessage(message, isError = false) {
-            successMessage.textContent = message;
-            successMessage.style.backgroundColor = isError ? '#f44336' : '#4CAF50';
-            successMessage.classList.remove('hidden');
-            successMessage.style.opacity = '1';
-
-            setTimeout(() => {
-                successMessage.style.opacity = '0';
-                setTimeout(() => {
-                    successMessage.classList.add('hidden');
-                }, 500);
-            }, 5000);
-        }
-
-        // --- Miles benefits examples logic ---
-        const benefitsData = {
-            '10k': [
-                "2 economy tickets to South America.",
-                "2 tickets to anywhere in Brazil.",
-                "3 to 5 nights in 4 or 5 star hotels in Brazil."
-            ],
-            '30k': [
-                "2 business class tickets to South America.",
-                "2 business class tickets to Europe or USA.",
-                "3 to 5 nights in luxury 5 star hotels in international destinations."
-            ],
-            '50k': [
-                "2 first class tickets to Europe or USA.",
-                "Unlimited business class tickets to South America.",
-                "Up to 7 nights in exclusive luxury resorts."
-            ]
-        };
-
-        function updateBenefits(gasto) {
-            const benefitsList = document.getElementById('benefits-list');
-            const buttons = document.querySelectorAll('.select-miles-btn');
-
-            // Update visual state of buttons
-            buttons.forEach(button => {
-                if (button.dataset.gasto === gasto) {
-                    button.classList.add('active');
-                } else {
-                    button.classList.remove('active');
-                }
-            });
-
-            // Clear current benefits list
-            benefitsList.innerHTML = '';
-            
-            // Inject new benefits
-            const benefits = benefitsData[gasto];
-            if (benefits) {
-                benefits.forEach(benefit => {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'benefits-list-item text-[#b3b3b3]';
-                    listItem.innerHTML = `<span class="benefits-list-icon">✅</span>${benefit}`;
-                    benefitsList.appendChild(listItem);
-                });
-            }
-        }
-
-        // Add event listeners to buttons
-        document.addEventListener('DOMContentLoaded', () => {
-            const milesButtons = document.querySelectorAll('.select-miles-btn');
-            milesButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    updateBenefits(e.target.dataset.gasto);
-                });
-            });
-
-            // Initialize carousel and default benefits on page load
-            createDots();
-            updateCarousel();
-            startAutoSlide();
-            updateBenefits('10k'); // Displays 10k benefits by default
-        });
-
-    </script>
 </body>
 </html>
