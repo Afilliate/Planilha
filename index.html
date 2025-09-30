@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plano Semanal Afiliado Orgânico</title>
+    <title>Plano Semanal Otimizado (V5.0)</title>
+    <script src="https://cdn.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Firebase Imports -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // Define as variáveis globais que serão usadas no script principal
@@ -109,7 +110,6 @@
              currentData[detailKey][taskId] = isChecked;
 
              // 3. Calcula o resumo do progresso
-             // PRECISAMOS USAR O DOM PARA PEGAR O ESTADO ATUAL
              const allTasks = [...document.querySelectorAll('[data-task]')];
              const totalTasks = allTasks.length;
              const completedTasks = allTasks.filter(item => {
@@ -192,7 +192,7 @@
             }
         }
         
-        // NOVA FUNÇÃO PARA BUSCAR E EXIBIR TODO O HISTÓRICO
+        // Função para buscar e exibir todo o histórico
         window.fetchWeeklyHistory = async function() {
             if (!window.userId || !window.appId) return;
             
@@ -204,13 +204,12 @@
                                             'users', window.userId, 
                                             'weekly_progress');
             
-            // Cria um Query para ordenar pela data da semana
-            const q = query(progressRef); // Remover orderBy para evitar erros de índice (conforme instrução)
+            // Query sem orderBy, para obedecer às regras do Canvas.
+            const q = query(progressRef); 
             
             try {
                 const querySnapshot = await getDocs(q);
-                let historyHTML = '';
-                const historyData = [];
+                let historyData = [];
 
                 querySnapshot.forEach((doc) => {
                     historyData.push(doc.data());
@@ -224,16 +223,17 @@
                     return;
                 }
                 
+                let historyHTML = '';
                 historyData.forEach(data => {
                     const progress = data.completionPercentage || 0;
                     const goalsDone = data.totalGoalsCompleted || 0;
-                    const totalGoals = data.totalGoals || 5; // Assumindo 5 metas
+                    const totalGoals = data.totalGoals || 6; 
                     
                     historyHTML += `
                         <div class="bg-gray-700 p-4 rounded-lg shadow-md flex justify-between items-center mb-2">
                             <div>
                                 <p class="text-lg font-bold text-cyan-300">Semana Início: ${data.date}</p>
-                                <p class="text-sm text-gray-300">Metas (5 Posts): ${goalsDone} de ${totalGoals} concluídas.</p>
+                                <p class="text-sm text-gray-300">Metas (6 Posts): ${goalsDone} de ${totalGoals} concluídas.</p>
                             </div>
                             <div class="text-right">
                                 <p class="text-2xl font-extrabold ${progress >= 100 ? 'text-green-400' : progress > 50 ? 'text-yellow-400' : 'text-red-400'}">
@@ -290,10 +290,10 @@
         <!-- Título Principal -->
         <header class="header-bg p-6 rounded-xl shadow-2xl mb-4">
             <h1 class="text-3xl sm:text-4xl font-extrabold text-white text-center">
-                🌊 Plano Semanal: Afiliado Orgânico 🚀
+                🌊 Plano Semanal Otimizado (V5.0) para Alavancagem Financeira 🚀
             </h1>
             <p class="text-sm sm:text-base text-cyan-100 text-center mt-2">
-                Foco total: 18:00h - 21:00h | Progresso salvo no banco de dados.
+                Foco Estratégico 1:1:2. Disciplina = Tarefa Clara + Execução Diária.
             </p>
         </header>
 
@@ -307,7 +307,7 @@
         <!-- Histórico de Progresso Semanal -->
         <div class="mb-10 p-5 bg-gray-900 rounded-xl shadow-2xl border-l-4 border-yellow-500">
             <h2 class="text-2xl font-bold mb-3 text-yellow-400 border-b border-yellow-700 pb-2">
-                📈 Histórico de Progresso Semanal
+                📈 Histórico de Disciplina Semanal
             </h2>
             <div id="history-list" class="space-y-3">
                 <!-- O histórico será carregado aqui -->
@@ -319,30 +319,34 @@
         <!-- Objetivos da Semana -->
         <div class="mb-10 p-5 bg-gray-800 rounded-xl shadow-lg border-l-4 border-fuchsia-500">
             <h2 class="text-2xl font-bold mb-3 text-fuchsia-400">
-                🎯 Objetivos de Conteúdo da Semana (5 Posts)
+                🎯 Metas de Criação (6 Posts Totais)
             </h2>
-            <p class="text-sm text-gray-400 mb-4">Marcar estas caixas garante que você cumpriu o volume mínimo de criação.</p>
+            <p class="text-sm text-gray-400 mb-4">Metas de volume: 2 posts por produto (1:1:1).</p>
 
-            <ul class="space-y-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <ul class="space-y-2 grid grid-cols-1 sm:grid-cols-3 gap-x-4">
                 <li data-task="goal-vpn-1" class="flex items-start">
                     <input type="checkbox" id="goal-vpn-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
-                    <label for="goal-vpn-1-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 1: VPN Tutorial/Review (Gringo)</label>
+                    <label for="goal-vpn-1-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 1: VPN (Gringo)</label>
                 </li>
                 <li data-task="goal-vpn-2" class="flex items-start">
                     <input type="checkbox" id="goal-vpn-2-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
-                    <label for="goal-vpn-2-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 2: VPN Dica de Segurança (Gringo)</label>
+                    <label for="goal-vpn-2-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 2: VPN (Gringo)</label>
                 </li>
-                <li data-task="goal-kiwify-1" class="flex items-start">
-                    <input type="checkbox" id="goal-kiwify-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
-                    <label for="goal-kiwify-1-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 3: Kiwify Dica Rápida (Nacional)</label>
+                <li data-task="goal-nacional-1" class="flex items-start">
+                    <input type="checkbox" id="goal-nacional-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
+                    <label for="goal-nacional-1-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 3: Produto Nacional</label>
                 </li>
-                <li data-task="goal-kiwify-2" class="flex items-start">
-                    <input type="checkbox" id="goal-kiwify-2-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
-                    <label for="goal-kiwify-2-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 4: Kiwify Prova Social/Storytelling (Nacional)</label>
+                <li data-task="goal-nacional-2" class="flex items-start">
+                    <input type="checkbox" id="goal-nacional-2-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
+                    <label for="goal-nacional-2-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 4: Produto Nacional</label>
                 </li>
-                 <li data-task="goal-kiwify-3" class="flex items-start">
-                    <input type="checkbox" id="goal-kiwify-3-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
-                    <label for="goal-kiwify-3-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 5: Kiwify Viral/Tendência (Nacional)</label>
+                 <li data-task="goal-milhas-1" class="flex items-start">
+                    <input type="checkbox" id="goal-milhas-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
+                    <label for="goal-milhas-1-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 5: Seu Produto (Milhas/Afiliados)</label>
+                </li>
+                 <li data-task="goal-milhas-2" class="flex items-start">
+                    <input type="checkbox" id="goal-milhas-2-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
+                    <label for="goal-milhas-2-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 6: Seu Produto (Milhas/Afiliados)</label>
                 </li>
             </ul>
         </div>
@@ -350,7 +354,7 @@
         <!-- Bloco de Trabalho - Dias da Semana -->
         <div class="mb-10">
             <h2 class="text-2xl font-bold mb-5 text-cyan-400 border-b border-cyan-700 pb-2">
-                Bloco de Trabalho (18:00h às 21:00h)
+                Bloco de Trabalho (18:00h às 21:00h) - Disciplina Focada
             </h2>
 
             <div id="weekly-schedule" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -358,7 +362,7 @@
             </div>
         </div>
 
-        <!-- Fim de Semana e Lazer (Não atualizado, mas essencial) -->
+        <!-- Fim de Semana e Lazer -->
         <div class="mb-10">
             <h2 class="text-2xl font-bold mb-5 text-green-400 border-b border-green-700 pb-2">
                 Fim de Semana e Lazer (Recarregar Energias)
@@ -367,22 +371,16 @@
                 <!-- SÁBADO -->
                 <div class="bg-gray-800 p-5 rounded-xl shadow-lg border-l-4 border-green-500 task-item">
                     <h3 class="text-xl font-bold text-green-400 mb-2">SÁBADO</h3>
-                    <p class="text-sm text-gray-400 mb-3">10:00 - 12:00 | Foco: Aprendizado/Aprimoramento</p>
+                    <p class="text-sm text-gray-400 mb-3">10:00 - 12:00 | Foco: Estratégia e Reinvestimento</p>
                     <ul class="space-y-2">
                         <li data-task="saturday-0" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
                             <div class="flex items-start">
                                 <input type="checkbox" id="saturday-0-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
-                                <label for="saturday-0-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Consumir 2h de conteúdo de valor (cursos, vídeos, leitura).</label>
+                                <label for="saturday-0-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Revisão de Metas de 90 Dias: Alinhar o esforço da semana com o objetivo final (Liberdade Financeira aos 20).</label>
                             </div>
                         </li>
                         <li data-task="saturday-1" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
                             <div class="flex items-start">
                                 <input type="checkbox" id="saturday-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
-                                <label for="saturday-1-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Após as 12:00: **LAZER GARANTIDO!**</label>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                <!-- DOMINGO -->
-                <div class="bg-gray-800 p-5 rounded-xl shadow-lg border-l-4 border-green-500 task-item">
-                    <h3 class="text-xl font-bold text-green-400 mb-2">DOMINGO</h3>
+                                <label for="saturday-1-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Após as 12:00: **LAZER GARANTIDO!** (Você mereceu).</label>
+                    
