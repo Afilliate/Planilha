@@ -1,165 +1,252 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="scroll-smooth">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Foco e Produtividade para Universitários</title>
+    <title>Plano Semanal Afiliado Orgânico</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        /* Estilos customizados para a estética */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0fff4; /* Verde suave */
-            color: #1a202c; /* Cinza escuro */
+            background-color: #0d1117; /* Fundo escuro */
+            color: #e5e7eb;
         }
-        .text-primary {
-            color: #2f855a; /* Verde mais escuro para destaque */
+        .task-item {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .bg-primary {
-            background-color: #38a169; /* Verde para botões */
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        .bg-secondary {
-            background-color: #d1f7e0; /* Verde mais claro */
+        .completed {
+            opacity: 0.6;
+            text-decoration: line-through;
         }
-        .shadow-lg-custom {
-            box-shadow: 0 10px 15px -3px rgba(56, 161, 105, 0.1), 0 4px 6px -2px rgba(56, 161, 105, 0.05);
+        .header-bg {
+            background-color: #0e7490; /* Azul Ciano Escuro */
+            background-image: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+        }
+        /* Corrigindo a cor dos links (labels) quando marcado */
+        .completed label {
+            color: #9ca3af; /* Cinza mais suave */
         }
     </style>
 </head>
-<body class="bg-gray-50 flex flex-col min-h-screen">
+<body>
 
-    <!-- Header / Hero Section -->
-    <header class="bg-primary text-white py-12 md:py-20 lg:py-24 text-center rounded-b-3xl">
-        <div class="container mx-auto px-4">
-            <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight">
-                Cansado do Estresse do TCC e das Provas? 🤯
+    <div class="min-h-screen p-4 sm:p-8">
+        <!-- Título Principal -->
+        <header class="header-bg p-6 rounded-xl shadow-2xl mb-8">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-white text-center">
+                🌊 Plano Semanal: Afiliado Orgânico 🚀
             </h1>
-            <h2 class="mt-4 text-xl md:text-2xl lg:text-3xl font-light max-w-4xl mx-auto">
-                Pare de Adiar Tarefas e Assuma o Controle da Sua Vida Acadêmica. 🚀
+            <p class="text-sm sm:text-base text-cyan-100 text-center mt-2">
+                Foco total: 18:00h - 21:00h | Auto-Resetado toda Segunda-feira.
+            </p>
+        </header>
+
+        <!-- Bloco de Trabalho - Dias da Semana -->
+        <div class="mb-10">
+            <h2 class="text-2xl font-bold mb-5 text-cyan-400 border-b border-cyan-700 pb-2">
+                Bloco de Trabalho (18:00h às 21:00h)
             </h2>
-            <div class="mt-8 md:mt-12">
-                <a href="#cta" class="inline-block bg-white text-primary font-bold text-lg md:text-xl px-8 py-4 rounded-full shadow-lg-custom transform transition hover:scale-105 hover:shadow-xl">
-                    Quero Tomar o Controle Agora! ✨
-                </a>
+
+            <div id="weekly-schedule" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Data Structure for Tasks -->
             </div>
         </div>
-    </header>
 
-    <!-- Problem Section -->
-    <section class="py-12 md:py-20 px-4">
-        <div class="container mx-auto max-w-3xl text-center">
-            <h3 class="text-2xl md:text-3xl font-bold text-gray-800">
-                Você já sentiu que está perdendo o controle? 🤔
-            </h3>
-            <p class="mt-4 text-lg text-gray-600 leading-relaxed">
-                Prazos que parecem impossíveis, uma lista de tarefas que só cresce e a sensação de que o estresse se tornou seu companheiro diário. A vida universitária é desafiadora, e a sobrecarga mental pode prejudicar seu desempenho e sua saúde.
-            </p>
-            <p class="mt-2 text-lg text-gray-600 leading-relaxed">
-                A boa notícia é que existe um caminho para uma jornada mais leve e produtiva. ✅
-            </p>
-        </div>
-    </section>
-
-    <!-- Solution Section -->
-    <section class="bg-secondary py-12 md:py-20 px-4 rounded-3xl">
-        <div class="container mx-auto max-w-5xl">
-            <h3 class="text-3xl md:text-4xl font-bold text-center text-gray-800">
-                Apresentamos o Gerenciador de Foco e Produtividade 🎓
-            </h3>
-            <p class="mt-4 text-center text-lg text-gray-600 max-w-3xl mx-auto">
-                Uma solução completa que combina a organização prática de uma planilha com um guia transformador, criado para o universitário brasileiro que busca excelência acadêmica e bem-estar.
-            </p>
-            <div class="mt-8 md:mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-2">
-                <!-- Product Card 1: Planilha -->
-                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg-custom flex flex-col items-center text-center">
-                    <div class="flex-shrink-0">
-                        <svg class="h-16 w-16 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-4m-2 4h4m6-4v4m-2-4h4m2 4h4M9 5h12M9 1h12M1 5h8v4H1z"/>
-                        </svg>
-                    </div>
-                    <h4 class="mt-4 text-xl font-bold text-gray-800">Planilha Inteligente e Intuitiva 📈</h4>
-                    <p class="mt-2 text-gray-600">
-                        Uma ferramenta visual e fácil de usar para organizar todas as suas tarefas. Com as categorias, prioridades e status, você nunca mais se sentirá perdido.
-                    </p>
+        <!-- Fim de Semana e Lazer -->
+        <div class="mb-10">
+            <h2 class="text-2xl font-bold mb-5 text-green-400 border-b border-green-700 pb-2">
+                Fim de Semana e Lazer (Recarregar Energias)
+            </h2>
+            <div id="weekend-schedule" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- SÁBADO -->
+                <div class="bg-gray-800 p-5 rounded-xl shadow-lg border-l-4 border-green-500 task-item">
+                    <h3 class="text-xl font-bold text-green-400 mb-2">SÁBADO</h3>
+                    <p class="text-sm text-gray-400 mb-3">10:00 - 12:00 | Foco: Aprendizado/Aprimoramento</p>
+                    <ul class="space-y-2">
+                        <li data-task="saturday-0" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
+                            <div class="flex items-start">
+                                <input type="checkbox" id="saturday-0-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
+                                <label for="saturday-0-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Consumir 2h de conteúdo de valor (cursos, vídeos, leitura).</label>
+                            </div>
+                        </li>
+                        <li data-task="saturday-1" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
+                            <div class="flex items-start">
+                                <input type="checkbox" id="saturday-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
+                                <label for="saturday-1-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Após as 12:00: **LAZER GARANTIDO!**</label>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
-                <!-- Product Card 2: Guia em PDF -->
-                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg-custom flex flex-col items-center text-center">
-                    <div class="flex-shrink-0">
-                        <svg class="h-16 w-16 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.5v11M12 18a1 1 0 100-2 1 1 0 000 2zM9 13v-4M9 12a1 1 0 100-2 1 1 0 000 2zM15 13v-4M15 12a1 1 0 100-2 1 1 0 000 2z"/>
-                        </svg>
-                    </div>
-                    <h4 class="mt-4 text-xl font-bold text-gray-800">Guia em PDF - Como Evitar o Estresse 🧘‍♀️</h4>
-                    <p class="mt-2 text-gray-600">
-                        Um e-book com dicas práticas e insights baseados em ciência para combater a procrastinação e o estresse. O guia fala sobre o impacto da negatividade, o poder da gratidão e a importância do autocuidado.
-                    </p>
+                <!-- DOMINGO -->
+                <div class="bg-gray-800 p-5 rounded-xl shadow-lg border-l-4 border-green-500 task-item">
+                    <h3 class="text-xl font-bold text-green-400 mb-2">DOMINGO</h3>
+                    <p class="text-sm text-gray-400 mb-3">LIVRE | Foco: Descanso Total</p>
+                    <ul class="space-y-2">
+                        <li data-task="sunday-0" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
+                             <div class="flex items-start">
+                                <input type="checkbox" id="sunday-0-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
+                                <label for="sunday-0-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Recarregar energias e preparar-se mentalmente para a escola/semana.</label>
+                            </div>
+                        </li>
+                        <li data-task="sunday-1" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
+                            <div class="flex items-start">
+                                <input type="checkbox" id="sunday-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
+                                <label for="sunday-1-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Nenhuma tarefa de marketing obrigatória!</label>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Benefits Section -->
-    <section class="py-12 md:py-20 px-4">
-        <div class="container mx-auto max-w-3xl text-center">
-            <h3 class="text-3xl md:text-4xl font-bold text-gray-800">
-                As Vantagens do Nosso Pacote 🏆
-            </h3>
-            <div class="mt-8 md:mt-12 grid gap-6 md:grid-cols-3">
-                <div class="flex flex-col items-center">
-                    <svg class="h-12 w-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <h4 class="mt-3 text-lg font-semibold text-gray-800">Fim da Procrastinação ⚡️</h4>
-                    <p class="mt-1 text-gray-600">
-                        Utilize a Matriz de Eisenhower para priorizar suas tarefas e a Técnica Pomodoro para manter o foco.
-                    </p>
-                </div>
-                <div class="flex flex-col items-center">
-                    <svg class="h-12 w-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <h4 class="mt-3 text-lg font-semibold text-gray-800">Mais Tempo Livre ⏰</h4>
-                    <p class="mt-1 text-gray-600">
-                        Quando sua rotina é organizada, você ganha tempo para o que realmente importa, como lazer e autocuidado.
-                    </p>
-                </div>
-                <div class="flex flex-col items-center">
-                    <svg class="h-12 w-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m-9-3a9 9 0 1118 0 9 9 0 01-18 0z" />
-                    </svg>
-                    <h4 class="mt-3 text-lg font-semibold text-gray-800">Menos Estresse 😌</h4>
-                    <p class="mt-1 text-gray-600">
-                        Aprenda a combater a negatividade e o estresse com base em princípios da psicologia positiva e do autocuidado.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
+    <script>
+        // Data Structure for Routine
+        const routineData = [
+            { day: 'SEGUNDA', color: 'red', tasks: [
+                { time: '18:00 - 19:00', focus: 'Pesquisa de Tendências e Nicho', product: 'VPN e Kiwify', task: 'Encontrar 2 tópicos quentes para a semana.' },
+                { time: '19:00 - 20:00', focus: 'Definição de Palavras-Chave', product: 'Ambos', task: 'Escolher 4 Palavras-Chave fortes (SEO/Hashtags).' },
+                { time: '20:00 - 21:00', focus: 'Planejamento de Títulos/Ganchos', product: 'Ambos', task: 'Esboçar 5 Títulos/Ganchos para os posts principais.' }
+            ]},
+            { day: 'TERÇA', color: 'yellow', tasks: [
+                { time: '18:00 - 19:30', focus: 'Criação de Conteúdo (Post 1/5)', product: 'VPN Gringo', task: 'Produzir o conteúdo principal (Reel/Carrossel de Tutorial).' },
+                { time: '19:30 - 21:00', focus: 'Otimização e Agendamento', product: 'VPN Gringo', task: 'Adicionar legendas, links, hashtags e agendar para o dia seguinte.' }
+            ]},
+            { day: 'QUARTA', color: 'lime', tasks: [
+                { time: '18:00 - 19:30', focus: 'Criação de Conteúdo (Post 2/5)', product: 'Kiwify Nacional', task: 'Produzir o conteúdo principal (Reel/TikTok de Storytelling/Dica).' },
+                { time: '19:30 - 21:00', focus: 'Otimização e Agendamento', product: 'Kiwify Nacional', task: 'Adicionar legendas, links de afiliado e agendar.' }
+            ]},
+            { day: 'QUINTA', color: 'blue', tasks: [
+                { time: '18:00 - 19:30', focus: 'Criação de Conteúdo Rápido (Posts 3, 4, 5/5)', product: 'Ambos', task: 'Produzir 2-3 Stories/Enquetes/Dicas para frequência diária.' },
+                { time: '19:30 - 21:00', focus: 'Análise e Interação (Crucial no Orgânico)', product: 'Ambos', task: 'Responder 100% dos comentários e DMs recebidos.' }
+            ]},
+            { day: 'SEXTA', color: 'indigo', tasks: [
+                { time: '18:00 - 19:00', focus: 'Interação e Logística Final', product: 'Ambos', task: 'Resposta final às mensagens. Conferir agendamentos.' },
+                { time: '19:00 em diante', focus: 'LAZER GARANTIDO', product: 'LIVRE', task: '**DESCONEXÃO E DIVERSÃO!** Seu fim de semana começou.' }
+            ]}
+        ];
 
-    <!-- CTA Section -->
-    <section id="cta" class="bg-primary py-12 md:py-20 px-4 text-center rounded-t-3xl">
-        <div class="container mx-auto">
-            <h3 class="text-3xl md:text-4xl font-extrabold text-white">
-                Não Deixe o Estresse Vencer Você.
-            </h3>
-            <p class="mt-4 text-lg md:text-xl text-white">
-                Tome o controle da sua jornada universitária agora e transforme seu caos em foco e produtividade. 🎯
-            </p>
-            <div class="mt-8 md:mt-10">
-                <a href="https://pay.kiwify.com.br/CDXNgQo" class="inline-block bg-white text-primary font-bold text-lg md:text-xl px-8 py-4 rounded-full shadow-lg-custom transform transition hover:scale-105 hover:shadow-xl">
-                    Quero Me Organizar Agora! 🚀
-                </a>
-            </div>
-            <p class="mt-4 text-sm text-white">
-                Garantia de Satisfação de 7 Dias!
-            </p>
-        </div>
-    </section>
+        // Function to get today's date in YYYY-MM-DD format
+        function getTodayDateString() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        }
 
-    <!-- Footer -->
-    <footer class="py-6 px-4 text-center text-gray-600 text-sm">
-        <p>&copy; 2025 Gerenciador de Produtividade. Todos os direitos reservados.</p>
-    </footer>
+        // Function to clear all task-related items from localStorage
+        function clearTasks() {
+            console.log("Reiniciando rotina semanal...");
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                // Check if the key corresponds to a task (e.g., 'segunda-0', 'saturday-1')
+                if (key && (key.includes('-') && key.length < 15)) { 
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+        }
 
+        // Function to check if a weekly reset is needed (happens every Monday)
+        function checkAndLoadTasks() {
+            const today = new Date();
+            const todayDay = today.getDay(); // 0 = Sunday, 1 = Monday
+            const todayDateString = getTodayDateString();
+            const lastResetDate = localStorage.getItem('lastResetDate');
+
+            // If today is Monday (1) AND the last reset was not today:
+            if (todayDay === 1 && lastResetDate !== todayDateString) {
+                clearTasks();
+                // Set the reset marker to today
+                localStorage.setItem('lastResetDate', todayDateString);
+                console.log("✅ Rotina semanal resetada automaticamente!");
+            } else if (todayDay === 1 && lastResetDate === todayDateString) {
+                console.log("Rotina já foi resetada hoje. Carregando tarefas salvas.");
+            } else {
+                console.log("Não é Segunda-feira ou o dia já passou. Carregando tarefas salvas.");
+            }
+            
+            // Always load the tasks after the potential reset
+            loadTasks();
+        }
+
+        // Function to render the schedule based on routineData
+        function renderSchedule() {
+            const container = document.getElementById('weekly-schedule');
+            container.innerHTML = ''; 
+
+            routineData.forEach((dayData, dayIndex) => {
+                const dayColor = dayData.color;
+                const card = document.createElement('div');
+                card.className = `bg-gray-800 p-5 rounded-xl shadow-lg border-l-4 border-${dayColor}-500 task-item`;
+                
+                let taskListHTML = dayData.tasks.map((task, taskIndex) => `
+                    <li data-task="${dayData.day.toLowerCase()}-${taskIndex}" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
+                        <div class="flex items-start">
+                            <input type="checkbox" id="${dayData.day.toLowerCase()}-${taskIndex}" 
+                                class="mr-2 mt-1 form-checkbox h-4 w-4 text-${dayColor}-600 rounded" 
+                                onclick="toggleTask(this)">
+                            <label for="${dayData.day.toLowerCase()}-${taskIndex}" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">${task.task}</label>
+                        </div>
+                        <div class="ml-6 text-xs text-gray-400 mt-1">
+                            <span class="font-bold mr-2">${task.time}:</span> ${task.focus} (${task.product})
+                        </div>
+                    </li>
+                `).join('');
+
+                card.innerHTML = `
+                    <h3 class="text-xl font-bold text-${dayColor}-400 mb-3">${dayData.day}</h3>
+                    <ul class="space-y-2">${taskListHTML}</ul>
+                `;
+                container.appendChild(card);
+            });
+            // Não chame loadTasks aqui, ela será chamada por checkAndLoadTasks
+        }
+
+        // Function to mark/unmark tasks and save to localStorage
+        function toggleTask(checkbox) {
+            const listItem = checkbox.closest('li');
+            const taskId = listItem.getAttribute('data-task');
+            
+            if (checkbox.checked) {
+                listItem.classList.add('completed');
+                localStorage.setItem(taskId, 'completed');
+            } else {
+                listItem.classList.remove('completed');
+                localStorage.removeItem(taskId);
+            }
+        }
+
+        // Function to load the task state from localStorage
+        function loadTasks() {
+            document.querySelectorAll('[data-task]').forEach(listItem => {
+                const taskId = listItem.getAttribute('data-task');
+                const checkbox = listItem.querySelector('input[type="checkbox"]');
+                
+                // Ensure the checkbox and taskId exist before proceeding
+                if (checkbox && taskId) {
+                    if (localStorage.getItem(taskId) === 'completed') {
+                        listItem.classList.add('completed');
+                        checkbox.checked = true;
+                    } else {
+                        listItem.classList.remove('completed');
+                        checkbox.checked = false;
+                    }
+                }
+            });
+        }
+
+        // Initialize routine on load
+        window.onload = function() {
+            renderSchedule();
+            checkAndLoadTasks(); // Check for reset and load tasks
+        }
+    </script>
 </body>
 </html>
