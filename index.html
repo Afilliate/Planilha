@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plano Semanal Otimizado (V5.0)</title>
+    <title>Plano Semanal Otimizado (Novo Horário)</title>
     <script src="https://cdn.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -290,10 +290,10 @@
         <!-- Título Principal -->
         <header class="header-bg p-6 rounded-xl shadow-2xl mb-4">
             <h1 class="text-3xl sm:text-4xl font-extrabold text-white text-center">
-                🌊 Plano Semanal Otimizado (V5.0) para Alavancagem Financeira 🚀
+                ✅ Plano Semanal Otimizado (Novo Horário de Pico)
             </h1>
             <p class="text-sm sm:text-base text-cyan-100 text-center mt-2">
-                Foco Estratégico 1:1:2. Disciplina = Tarefa Clara + Execução Diária.
+                Bloco de Foco: **15:00h às 18:00h**. Alinhamento total com escola, almoço e academia.
             </p>
         </header>
 
@@ -354,7 +354,7 @@
         <!-- Bloco de Trabalho - Dias da Semana -->
         <div class="mb-10">
             <h2 class="text-2xl font-bold mb-5 text-cyan-400 border-b border-cyan-700 pb-2">
-                Bloco de Trabalho (18:00h às 21:00h) - Disciplina Focada
+                Bloco de Trabalho: **15:00h às 18:00h** (Seu Pico de Foco)
             </h2>
 
             <div id="weekly-schedule" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -383,4 +383,127 @@
                             <div class="flex items-start">
                                 <input type="checkbox" id="saturday-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
                                 <label for="saturday-1-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Após as 12:00: **LAZER GARANTIDO!** (Você mereceu).</label>
-                    
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- DOMINGO -->
+                <div class="bg-gray-800 p-5 rounded-xl shadow-lg border-l-4 border-green-500 task-item">
+                    <h3 class="text-xl font-bold text-green-400 mb-2">DOMINGO</h3>
+                    <p class="text-sm text-gray-400 mb-3">LIVRE | Foco: Descanso Total</p>
+                    <ul class="space-y-2">
+                        <li data-task="sunday-0" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
+                             <div class="flex items-start">
+                                <input type="checkbox" id="sunday-0-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
+                                <label for="sunday-0-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Recarregar energias e preparar-se mentalmente para a escola/semana.</label>
+                            </div>
+                        </li>
+                        <li data-task="sunday-1" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
+                            <div class="flex items-start">
+                                <input type="checkbox" id="sunday-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
+                                <label for="sunday-1-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Nenhuma tarefa de marketing obrigatória!</label>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Structure for Routine (Updated for 3 products and 6 posts - NOVO HORÁRIO)
+        const routineData = [
+            { day: 'SEGUNDA', color: 'red', tasks: [
+                { time: '15:00 - 15:45', focus: 'Pesquisa Rápida (P1 e P2)', product: 'P1/P2', task: 'Encontrar 5 tópicos e 5 ganchos de conteúdo para VPN e 5 para o Produto Nacional.' },
+                { time: '15:45 - 16:30', focus: 'Roteiro (P3) - Mód. 1', product: 'P3: Milhas/Próprio', task: 'Estruturar o Roteiro 1: Copy de Alto Nível e Ganchos (Deep Work para o seu Infoproduto).' },
+                { time: '16:30 - 17:15', focus: 'Roteiro (P3) - Mód. 2', product: 'P3: Milhas/Próprio', task: 'Estruturar o Roteiro 2: Storytelling e CTA (Call to Action) de Alta Conversão.' },
+                { time: '17:15 - 18:00', focus: 'Funil & Copy (P3)', product: 'P3: Milhas/Próprio', task: '**REVISÃO CRÍTICA:** Revisar a Copy do Link na Bio / Landing Page do P3. (Otimizar taxa de conversão do funil).' }
+            ]},
+            { day: 'TERÇA', color: 'yellow', tasks: [
+                { time: '15:00 - 16:30', focus: 'Produção Lote (P1 e P2)', product: 'P1/P2', task: 'Produzir e editar os 2 Posts de VPN e os 2 Posts do Produto Nacional.' },
+                { time: '16:30 - 18:00', focus: 'Agendamento em Bloco', product: 'P1 e P2', task: 'Revisar links/legendas/hashtags e AGENDAR todos os 4 posts de P1 e P2 (Volume).' }
+            ]},
+            { day: 'QUARTA', color: 'lime', tasks: [
+                { time: '15:00 - 16:00', focus: 'Deep Work (P3) - Mód. 1', product: 'P3: Milhas/Próprio', task: 'Criação do Post 1: Conteúdo de Valor/Tutorial (Produção de Alta Qualidade do seu Ativo).' },
+                { time: '16:00 - 17:00', focus: 'Deep Work (P3) - Mód. 2', product: 'P3: Milhas/Próprio', task: 'Criação do Post 2: Prova Social/Storytelling (Produção de Alta Qualidade do seu Ativo).' },
+                { time: '17:00 - 18:00', focus: 'Agendamento Final (P3) & Estoque', product: 'P3/Estoque', task: 'Revisar e AGENDAR os 2 posts do seu Infoproduto Próprio. Começar a gerar 1 post extra (Estoque).' }
+            ]},
+            { day: 'QUINTA', color: 'blue', tasks: [
+                { time: '15:00 - 15:45', focus: 'Coleta de Dados P1 e P2', product: 'P1/P2', task: '**COLETAR:** CTR (Cliques/Impressão) dos links, Engajamento e Visualizações (Base do Afiliado).' },
+                { time: '15:45 - 16:30', focus: 'Coleta de Dados P3', product: 'P3: Milhas/Próprio', task: '**COLETAR:** Taxa de conversão do Link na Bio e Comentários/DMs (Base do Lançamento).' },
+                { time: '16:30 - 17:15', focus: 'Ação Corretiva', product: 'TODOS', task: '**REAGIR:** Definir a principal mudança de Copy/Roteiro para a próxima semana baseada nos dados coletados.' },
+                { time: '17:15 - 18:00', focus: 'Tráfego de Perfil', product: 'P1 (VPN) e P3 (Milhas)', task: 'Interagir com 15 perfis concorrentes grandes dos nichos (Ex: 8 Milhas, 7 VPN).' }
+            ]},
+            { day: 'SEXTA', color: 'indigo', tasks: [
+                { time: '15:00 - 16:00', focus: 'Gestão Financeira & Alavancagem', product: 'Milhas/Invest/Equipe', task: '**DELEGAR:** Revisar lucros, definir REINVESTIMENTO e distribuir tarefas de edição/logística para a equipe.' },
+                { time: '16:00 - 17:00', focus: 'Estoque de Segurança', product: 'P1/P2/P3', task: 'Produzir 1 post extra (qualquer nicho) para o estoque de segurança (contra imprevistos).' },
+                { time: '17:00 - 18:00', focus: 'Leitura Estratégica', product: 'Conhecimento', task: 'Ler 30 páginas de um livro/artigo sobre Copywriting, Estratégia ou Finanças.' },
+                { time: '18:00 em diante', focus: 'LAZER GARANTIDO/ACADEMIA', product: 'LIVRE', task: '**DESCONEXÃO E DIVERSÃO!** Tudo pronto, comece a focar no bem-estar.' }
+            ]}
+        ];
+        
+        // Função para renderizar a rotina na UI
+        function renderSchedule() {
+            const container = document.getElementById('weekly-schedule');
+            container.innerHTML = ''; 
+
+            routineData.forEach((dayData, dayIndex) => {
+                const dayColor = dayData.color;
+                const card = document.createElement('div');
+                card.className = `bg-gray-800 p-5 rounded-xl shadow-lg border-l-4 border-${dayColor}-500 task-item`;
+                
+                let taskListHTML = dayData.tasks.map((task, taskIndex) => `
+                    <li data-task="${dayData.day.toLowerCase()}-${taskIndex}" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
+                        <div class="flex items-start">
+                            <input type="checkbox" id="${dayData.day.toLowerCase()}-${taskIndex}" 
+                                class="mr-2 mt-1 form-checkbox h-4 w-4 text-${dayColor}-600 rounded" 
+                                onclick="toggleTask(this)">
+                            <label for="${dayData.day.toLowerCase()}-${taskIndex}" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">${task.task}</label>
+                        </div>
+                        <div class="ml-6 text-xs text-gray-400 mt-1">
+                            <span class="font-bold mr-2">${task.time}:</span> ${task.focus} (${task.product})
+                        </div>
+                    </li>
+                `).join('');
+
+                card.innerHTML = `
+                    <h3 class="text-xl font-bold text-${dayData.color}-400 mb-3">${dayData.day}</h3>
+                    <ul class="space-y-2">${taskListHTML}</ul>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Função chamada ao clicar no checkbox
+        function toggleTask(checkbox) {
+            const listItem = checkbox.closest('li');
+            
+            // Chama a função de salvamento do Firebase (definida no bloco <script type="module">)
+            if (window.saveProgress) {
+                // O salvamento agora ocorre aqui e o update da classe é feito no saveProgress para garantir a sincronia
+                window.saveProgress(listItem.getAttribute('data-task'), checkbox.checked);
+                
+                // Atualização visual imediata
+                if (checkbox.checked) {
+                    listItem.classList.add('completed');
+                } else {
+                    listItem.classList.remove('completed');
+                }
+            }
+        }
+
+        // Função principal para carregar o progresso (chamada após o login no Firebase)
+        window.checkAndLoadTasks = function() {
+            renderSchedule();
+            window.loadProgress();
+        }
+
+        // Inicializa a rotina ao carregar a página
+        window.onload = function() {
+            // A inicialização do Firebase está no bloco de módulo e chama renderSchedule/loadProgress após o login.
+            // Apenas renderiza a estrutura inicial antes do Firebase carregar.
+            renderSchedule(); 
+        }
+    </script>
+</body>
+</html>
