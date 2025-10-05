@@ -1,509 +1,528 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plano Semanal Otimizado (Novo Horário)</title>
-    <script src="https://cdn.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Firebase Imports -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // Define as variáveis globais que serão usadas no script principal
-        window.app = null;
-        window.db = null;
-        window.auth = null;
-        window.userId = null;
-        window.appId = null;
+<!--
+    Plano Semanal Otimizado (V20.0 - HISTÓRICO DE DISCIPLINA FUNCIONAL):
+    Estrutura Reorganizada com sistema de rastreamento de consistência (Histórico Semanal) adicionado.
+    Foco Duplo: P1 (VPN Cash Flow) para financiar P3 (Assessoria Milhas/Viagens - Liberdade).
+    Horário de Foco: 15:00h às 18:00h (3h diárias).
+-->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+    // Configurações e variáveis globais do Canvas (MANDATÓRIO)
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Função utilitária para obter a data da Segunda-feira da semana atual (para ID do documento)
-        window.getWeekStartDate = function() {
-            const now = new Date();
-            const dayOfWeek = now.getDay(); // 0 = Domingo, 1 = Segunda, ... 6 = Sábado
-            const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Ajusta para a Segunda
-            const monday = new Date(now.setDate(diff));
-            return monday.toISOString().split('T')[0];
-        }
+    let app, db, auth;
+    let userId = 'loading';
+    let isAuthReady = false;
+    let historyRecords = []; // Array para armazenar o histórico semanal
+    let currentRoutine = {}; // Variável para armazenar a rotina da semana atual
 
-        // Função obrigatória para inicializar o Firebase
-        async function initializeFirebase() {
-            setLogLevel('Debug');
+    // Estruturas de dados (Conteúdo do V19.0 - Refatorado por Blocos de Foco)
+    const initialRoutineBlueprint = {
+        'Segunda': [
+            // FOCO PRINCIPAL DO DIA: CRIAÇÃO DE COPY E ROTEIROS (TEXTO)
+            { time: '15:00 - 16:00', task: '**CRIAÇÃO DE COPY P1 (60m):** Escrever 3 Ganchos Persuasivos de 10s (Foco em Objeção/Curiosidade)', product: 'P1', completed: false, account: 'Cash Flow' },
+            { time: '16:00 - 17:00', task: '**ROTEIRO P3 (60m):** Criar 1 Roteiro Completo para Storytelling de Prova Social/Autoridade', product: 'P3', completed: false, account: 'Liberdade' },
+            { time: '17:00 - 18:00', task: '**COPY P3 (60m):** Escrita de 2 Ganchos de Venda Rápida (para usar em Stories ou Carrosséis)', product: 'P3', completed: false, account: 'Liberdade' }
+        ],
+        'Terca': [
+            // FOCO PRINCIPAL DO DIA: CRIAÇÃO DE ATIVOS (PRODUÇÃO E EDIÇÃO)
+            { time: '15:00 - 16:00', task: '**PRODUÇÃO P1 (60m):** Gravação e Edição Final em Lote de 3 Vídeos Curvos (Usa Copy de Segunda)', product: 'P1', completed: false, account: 'Cash Flow' },
+            { time: '16:00 - 17:00', task: '**PRODUÇÃO P3 (60m):** Design do Carrossel (P2) e Gravação/Edição do Vídeo Reação (Usa Roteiro de Segunda)', product: 'P3', completed: false, account: 'Liberdade' },
+            { time: '17:00 - 18:00', task: '**ESTOQUE GERAL (60m):** Finalizar 1 Ativo Rápido (Vídeo de 30s ou Post de Dica) para o Estoque de Segurança', product: 'Geral', completed: false, account: 'Ambas' }
+        ],
+        'Quarta': [
+            // FOCO PRINCIPAL DO DIA: OTIMIZAÇÃO & AGENDAMENTO (TAREFA CHAVE P/ PROGRESSO)
+            { time: '15:00 - 16:00', task: '**AGENDAMENTO P1 (60m):** Otimização (Títulos/Tags/SEO) e Programação de 3 Posts VPN (Tarefa CHAVE)', product: 'P1', completed: false, account: 'Cash Flow' }, 
+            { time: '16:00 - 17:00', task: '**AGENDAMENTO P3 (60m):** Revisão Final, Otimização e Programação de 3 Posts Assessoria (Tarefa CHAVE)', product: 'P3', completed: false, account: 'Liberdade' }, 
+            { time: '17:00 - 18:00', task: '**ESTOQUE ROTEIROS (60m):** Criar 3 Novos Roteiros/Ganchos para a próxima semana', product: 'Geral', completed: false, account: 'Ambas' }
+        ],
+        'Quinta': [
+            // FOCO PRINCIPAL DO DIA: ANÁLISE E AÇÃO CORRETIVA RÁPIDA
+            { time: '15:00 - 16:30', task: '**ANÁLISE DE DADOS (90m):** Coleta de Dados P1 e P3 (Cliques, Engajamento, CTR) e Diagnóstico de Falhas', product: 'Geral', completed: false, account: 'Ambas' },
+            { time: '16:30 - 17:15', task: '**AÇÃO CORRETIVA P3 (45m):** Criar V2 de Copy/Gancho para Teste Imediato (Baseado na Análise)', product: 'P3', completed: false, account: 'Liberdade' },
+            { time: '17:15 - 18:00', task: '**ENGAGEMENT P3 (45m):** Interação (15 Perfis de Nicho) + Criação de 1 Story Estratégico (Venda Quente)', product: 'P3', completed: false, account: 'Liberdade' }
+        ],
+        'Sexta': [
+            // FOCO PRINCIPAL DO DIA: PLANEJAMENTO ESTRATÉGICO E LIBERDADE
+            { time: '15:00 - 16:00', task: '**PLANEJAMENTO FINANCEIRO (60m):** Reinvestimento (70% Lucro) e Criação de Fundo de Teste', product: 'P1', completed: false, account: 'Cash Flow' },
+            { time: '16:00 - 17:00', task: '**MODELAGEM DE INVESTIMENTO (60m):** Análise de Milhas/Bancos (30% Lucro - Renda Passiva)', product: 'Geral', completed: false, account: 'Liberdade' },
+            { time: '17:00 - 18:00', task: '**PREPARAÇÃO SEMANAL (60m):** Revisão de Checklist e Definição da Estrutura de Ganchos para a Próxima Semana', product: 'Geral', completed: false, account: 'Ambas' }
+        ]
+    };
+
+    // Inicialização do Firebase e Autenticação
+    const initializeFirebase = async () => {
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
             
-            // 1. Configuração e Inicialização
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-            window.appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-            if (Object.keys(firebaseConfig).length === 0) {
-                 console.error("Firebase config não encontrado. O rastreamento de progresso não funcionará.");
-                 document.getElementById('firebase-status').textContent = "ERRO: Configuração Firebase ausente.";
-                 return;
+            if (initialAuthToken) {
+                await signInWithCustomToken(auth, initialAuthToken);
+            } else {
+                await signInAnonymously(auth);
             }
 
-            window.app = initializeApp(firebaseConfig);
-            window.db = getFirestore(window.app);
-            window.auth = getAuth(window.app);
-            
-            document.getElementById('firebase-status').textContent = "Conectando ao banco de dados...";
-
-            // 2. Autenticação
-            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(window.auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(window.auth);
-                }
-            } catch (error) {
-                console.error("Erro na autenticação:", error);
-                document.getElementById('firebase-status').textContent = "ERRO de Autenticação.";
-                return;
-            }
-
-            // 3. Listener de Estado de Autenticação (Para garantir que o userId seja definido)
-            onAuthStateChanged(window.auth, (user) => {
+            onAuthStateChanged(auth, async (user) => {
                 if (user) {
-                    window.userId = user.uid;
-                    document.getElementById('firebase-status').textContent = `Conectado. Usuário ID: ${window.userId}`;
-                    window.checkAndLoadTasks(); // Inicia o carregamento da rotina
-                    window.fetchWeeklyHistory(); // Puxa o histórico salvo
+                    userId = user.uid;
                 } else {
-                    console.error("Usuário desconectado.");
-                    document.getElementById('firebase-status').textContent = "Desconectado.";
+                    userId = crypto.randomUUID(); // Fallback para anônimo
                 }
+                isAuthReady = true;
+                console.log(`Firebase Ready. User ID: ${userId}`);
+                loadData();
             });
+
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+            userId = crypto.randomUUID();
+            isAuthReady = true;
+            loadData(); 
         }
+    };
 
-        window.saveProgress = async function(taskId, isChecked) {
-             if (!window.userId || !window.appId) return;
+    // Funções de manipulação do Firestore
+    const getRoutineDocRef = () => doc(db, `/artifacts/${appId}/users/${userId}/daily_routine`, 'weeklyPlan');
+    const getHistoryDocRef = () => doc(db, `/artifacts/${appId}/users/${userId}/daily_routine`, 'history_data');
 
-             const weekStartDate = window.getWeekStartDate();
-             const docId = weekStartDate; // ID do documento é a data da Segunda-feira
-             const docRef = doc(window.db, 
-                                 'artifacts', window.appId, 
-                                 'users', window.userId, 
-                                 'weekly_progress', docId);
-
-             // 1. Obtém o estado atual para evitar sobrescrever dados de outras tarefas
-             let currentData = {};
-             try {
-                 const docSnap = await getDoc(docRef);
-                 if (docSnap.exists()) {
-                     currentData = docSnap.data();
-                 }
-             } catch (error) {
-                 console.error("Erro ao obter dados atuais:", error);
-                 return;
-             }
-
-             // 2. Atualiza o detalhe da tarefa
-             const detailKey = taskId.startsWith('goal-') ? 'goalsDetail' : 'tasksDetail';
-             
-             if (!currentData[detailKey]) {
-                 currentData[detailKey] = {};
-             }
-             currentData[detailKey][taskId] = isChecked;
-
-             // 3. Calcula o resumo do progresso
-             const allTasks = [...document.querySelectorAll('[data-task]')];
-             const totalTasks = allTasks.length;
-             const completedTasks = allTasks.filter(item => {
-                 const checkbox = item.querySelector('input[type="checkbox"]');
-                 return checkbox && checkbox.checked;
-             }).length;
-
-             const totalGoals = document.querySelectorAll('[data-task^="goal-"]').length;
-             const completedGoals = document.querySelectorAll('[data-task^="goal-"] input:checked').length;
-             
-             const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-             
-             currentData.totalTasksCompleted = completedTasks;
-             currentData.totalGoalsCompleted = completedGoals;
-             currentData.completionPercentage = parseFloat(completionPercentage.toFixed(2));
-             currentData.totalTasks = totalTasks;
-             currentData.totalGoals = totalGoals;
-             currentData.date = weekStartDate; // Garante a data da semana
-             currentData.timestamp = new Date().toISOString(); // Última atualização
-
-             // 4. Salva no Firestore
-             try {
-                 await setDoc(docRef, currentData);
-                 console.log("Progresso salvo com sucesso para a semana:", docId);
-                 window.fetchWeeklyHistory(); // Atualiza o histórico imediatamente
-             } catch (error) {
-                 console.error("Erro ao salvar progresso:", error);
-             }
-         }
-
-        window.loadProgress = async function() {
-            if (!window.userId || !window.appId) return;
-
-            const weekStartDate = window.getWeekStartDate();
-            const docId = weekStartDate;
-            const docRef = doc(window.db, 
-                                'artifacts', window.appId, 
-                                'users', window.userId, 
-                                'weekly_progress', docId);
-
-            document.getElementById('firebase-status').textContent = "Carregando progresso da semana...";
-            
-            try {
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    console.log("Progresso da semana carregado:", data);
-                    document.getElementById('firebase-status').textContent = `Progresso de ${data.date} carregado.`;
-                    
-                    // Aplica as tarefas concluídas
-                    const allTasks = document.querySelectorAll('[data-task]');
-                    allTasks.forEach(item => {
-                        const taskId = item.getAttribute('data-task');
-                        const checkbox = item.querySelector('input[type="checkbox"]');
-                        
-                        if (!checkbox) return;
-
-                        let isCompleted = false;
-                        if (taskId.startsWith('goal-') && data.goalsDetail && data.goalsDetail[taskId]) {
-                            isCompleted = data.goalsDetail[taskId];
-                        } else if (data.tasksDetail && data.tasksDetail[taskId]) {
-                            isCompleted = data.tasksDetail[taskId];
-                        }
-
-                        if (isCompleted) {
-                            checkbox.checked = true;
-                            item.classList.add('completed');
-                        } else {
-                            checkbox.checked = false;
-                            item.classList.remove('completed');
-                        }
-                    });
-
-                } else {
-                    document.getElementById('firebase-status').textContent = "Semana nova! Comece a marcar suas tarefas.";
-                }
-            } catch (error) {
-                console.error("Erro ao carregar progresso:", error);
-                document.getElementById('firebase-status').textContent = "ERRO ao carregar o progresso.";
+    const loadData = () => {
+        if (!isAuthReady) return;
+        
+        // Listener para a rotina da semana atual
+        onSnapshot(getRoutineDocRef(), (docSnapshot) => {
+            if (docSnapshot.exists()) {
+                currentRoutine = docSnapshot.data().routine;
+            } else {
+                currentRoutine = JSON.parse(JSON.stringify(initialRoutineBlueprint));
+                saveRoutine(currentRoutine);
             }
-        }
-        
-        // Função para buscar e exibir todo o histórico
-        window.fetchWeeklyHistory = async function() {
-            if (!window.userId || !window.appId) return;
-            
-            const historyContainer = document.getElementById('history-list');
-            historyContainer.innerHTML = `<p class="text-gray-400 text-center">Buscando histórico...</p>`;
+            renderRoutine();
+        }, (error) => {
+            console.error("Erro ao carregar rotina:", error);
+            currentRoutine = JSON.parse(JSON.stringify(initialRoutineBlueprint));
+            renderRoutine();
+        });
 
-            const progressRef = collection(window.db, 
-                                            'artifacts', window.appId, 
-                                            'users', window.userId, 
-                                            'weekly_progress');
-            
-            // Query sem orderBy, para obedecer às regras do Canvas.
-            const q = query(progressRef); 
-            
-            try {
-                const querySnapshot = await getDocs(q);
-                let historyData = [];
-
-                querySnapshot.forEach((doc) => {
-                    historyData.push(doc.data());
-                });
-                
-                // Ordena os dados no cliente (no JavaScript)
-                historyData.sort((a, b) => b.date.localeCompare(a.date));
-
-                if (historyData.length === 0) {
-                    historyContainer.innerHTML = `<p class="text-gray-400 text-center p-4">Nenhum histórico de semana encontrado ainda.</p>`;
-                    return;
-                }
-                
-                let historyHTML = '';
-                historyData.forEach(data => {
-                    const progress = data.completionPercentage || 0;
-                    const goalsDone = data.totalGoalsCompleted || 0;
-                    const totalGoals = data.totalGoals || 6; 
-                    
-                    historyHTML += `
-                        <div class="bg-gray-700 p-4 rounded-lg shadow-md flex justify-between items-center mb-2">
-                            <div>
-                                <p class="text-lg font-bold text-cyan-300">Semana Início: ${data.date}</p>
-                                <p class="text-sm text-gray-300">Metas (6 Posts): ${goalsDone} de ${totalGoals} concluídas.</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-2xl font-extrabold ${progress >= 100 ? 'text-green-400' : progress > 50 ? 'text-yellow-400' : 'text-red-400'}">
-                                    ${progress}%
-                                </p>
-                                <p class="text-xs text-gray-400">Progresso Geral</p>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                historyContainer.innerHTML = historyHTML;
-
-            } catch (error) {
-                console.error("Erro ao buscar histórico:", error);
-                historyContainer.innerHTML = `<p class="text-red-400 text-center p-4">Erro ao carregar histórico: ${error.message}</p>`;
+        // Listener para o histórico
+        onSnapshot(getHistoryDocRef(), (docSnapshot) => {
+            if (docSnapshot.exists() && docSnapshot.data().history) {
+                historyRecords = docSnapshot.data().history;
+            } else {
+                historyRecords = [];
             }
+            renderRoutine();
+        }, (error) => {
+            console.error("Erro ao carregar histórico:", error);
+        });
+    };
+
+    const saveRoutine = async (routineData) => {
+        if (!isAuthReady) return;
+        try {
+            await setDoc(getRoutineDocRef(), { routine: routineData }, { merge: true });
+        } catch (error) {
+            console.error("Erro ao salvar rotina:", error);
         }
+    };
+
+    const toggleTask = (day, index) => {
+        if (!isAuthReady) return;
+
+        const newRoutine = JSON.parse(JSON.stringify(currentRoutine));
+        const task = newRoutine[day][index];
+        if (task) {
+            task.completed = !task.completed;
+            saveRoutine(newRoutine);
+        }
+    };
+
+    const calculateScore = (routine) => {
+        let completedCount = 0;
+        let totalCount = 0;
         
-        initializeFirebase();
-    </script>
-    <style>
-        /* Estilos customizados para a estética */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0d1117; /* Fundo escuro */
-            color: #e5e7eb;
-        }
-        .task-item {
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .task-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .completed {
-            opacity: 0.6;
-            text-decoration: line-through;
-        }
-        .header-bg {
-            background-color: #0e7490; /* Azul Ciano Escuro */
-            background-image: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
-        }
-        /* Corrigindo a cor dos links (labels) quando marcado */
-        .completed label {
-            color: #9ca3af; /* Cinza mais suave */
-        }
-    </style>
-</head>
-<body>
-
-    <div class="min-h-screen p-4 sm:p-8">
-        <!-- Título Principal -->
-        <header class="header-bg p-6 rounded-xl shadow-2xl mb-4">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-white text-center">
-                ✅ Plano Semanal Otimizado (Novo Horário de Pico)
-            </h1>
-            <p class="text-sm sm:text-base text-cyan-100 text-center mt-2">
-                Bloco de Foco: **15:00h às 18:00h**. Alinhamento total com escola, almoço e academia.
-            </p>
-        </header>
-
-        <!-- Status do Firebase/Usuário -->
-        <div class="text-center mb-6">
-            <p id="firebase-status" class="text-sm text-yellow-400 p-2 bg-gray-800 rounded-lg">
-                Iniciando conexão...
-            </p>
-        </div>
+        const days = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta'];
+        days.forEach(day => {
+            if (routine[day]) {
+                routine[day].forEach(task => {
+                    totalCount++;
+                    if (task.completed) {
+                        completedCount++;
+                    }
+                });
+            }
+        });
         
-        <!-- Histórico de Progresso Semanal -->
-        <div class="mb-10 p-5 bg-gray-900 rounded-xl shadow-2xl border-l-4 border-yellow-500">
-            <h2 class="text-2xl font-bold mb-3 text-yellow-400 border-b border-yellow-700 pb-2">
-                📈 Histórico de Disciplina Semanal
-            </h2>
-            <div id="history-list" class="space-y-3">
-                <!-- O histórico será carregado aqui -->
-                <p class="text-gray-400 text-center p-4">Aguardando conexão com o banco de dados...</p>
-            </div>
-        </div>
+        const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+        return { completedCount, totalCount, percentage };
+    };
 
-
-        <!-- Objetivos da Semana -->
-        <div class="mb-10 p-5 bg-gray-800 rounded-xl shadow-lg border-l-4 border-fuchsia-500">
-            <h2 class="text-2xl font-bold mb-3 text-fuchsia-400">
-                🎯 Metas de Criação (6 Posts Totais)
-            </h2>
-            <p class="text-sm text-gray-400 mb-4">Metas de volume: 2 posts por produto (1:1:1).</p>
-
-            <ul class="space-y-2 grid grid-cols-1 sm:grid-cols-3 gap-x-4">
-                <li data-task="goal-vpn-1" class="flex items-start">
-                    <input type="checkbox" id="goal-vpn-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
-                    <label for="goal-vpn-1-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 1: VPN (Gringo)</label>
-                </li>
-                <li data-task="goal-vpn-2" class="flex items-start">
-                    <input type="checkbox" id="goal-vpn-2-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
-                    <label for="goal-vpn-2-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 2: VPN (Gringo)</label>
-                </li>
-                <li data-task="goal-nacional-1" class="flex items-start">
-                    <input type="checkbox" id="goal-nacional-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
-                    <label for="goal-nacional-1-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 3: Produto Nacional</label>
-                </li>
-                <li data-task="goal-nacional-2" class="flex items-start">
-                    <input type="checkbox" id="goal-nacional-2-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
-                    <label for="goal-nacional-2-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 4: Produto Nacional</label>
-                </li>
-                 <li data-task="goal-milhas-1" class="flex items-start">
-                    <input type="checkbox" id="goal-milhas-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
-                    <label for="goal-milhas-1-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 5: Seu Produto (Milhas/Afiliados)</label>
-                </li>
-                 <li data-task="goal-milhas-2" class="flex items-start">
-                    <input type="checkbox" id="goal-milhas-2-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-fuchsia-600 rounded" onclick="toggleTask(this)">
-                    <label for="goal-milhas-2-check" class="text-base text-gray-300 flex-1 cursor-pointer">Post 6: Seu Produto (Milhas/Afiliados)</label>
-                </li>
-            </ul>
-        </div>
+    const saveHistoryAndResetWeek = async () => {
+        if (!isAuthReady || !currentRoutine) return;
         
-        <!-- Bloco de Trabalho - Dias da Semana -->
-        <div class="mb-10">
-            <h2 class="text-2xl font-bold mb-5 text-cyan-400 border-b border-cyan-700 pb-2">
-                Bloco de Trabalho: **15:00h às 18:00h** (Seu Pico de Foco)
-            </h2>
+        // 1. Calcular a pontuação da semana
+        const { completedCount, totalCount, percentage } = calculateScore(currentRoutine);
 
-            <div id="weekly-schedule" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Tasks will be rendered here by JS -->
-            </div>
-        </div>
+        // Se nenhuma tarefa foi marcada, avisa antes de resetar
+        if (completedCount === 0 && totalCount > 0) {
+            // Em vez de alert(), usaremos console.error e uma mensagem na UI
+            console.error("Nenhuma tarefa concluída. Semana não salva.");
+            document.getElementById('save-message').innerText = 'Nenhuma tarefa concluída para salvar. Reiniciando...';
+            setTimeout(() => document.getElementById('save-message').innerText = '', 3000);
+        }
 
-        <!-- Fim de Semana e Lazer -->
-        <div class="mb-10">
-            <h2 class="text-2xl font-bold mb-5 text-green-400 border-b border-green-700 pb-2">
-                Fim de Semana e Lazer (Recarregar Energias)
-            </h2>
-            <div id="weekend-schedule" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- SÁBADO -->
-                <div class="bg-gray-800 p-5 rounded-xl shadow-lg border-l-4 border-green-500 task-item">
-                    <h3 class="text-xl font-bold text-green-400 mb-2">SÁBADO</h3>
-                    <p class="text-sm text-gray-400 mb-3">10:00 - 12:00 | Foco: Estratégia e Reinvestimento</p>
-                    <ul class="space-y-2">
-                        <li data-task="saturday-0" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
-                            <div class="flex items-start">
-                                <input type="checkbox" id="saturday-0-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
-                                <label for="saturday-0-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Revisão de Metas de 90 Dias: Alinhar o esforço da semana com o objetivo final (Liberdade Financeira aos 20).</label>
-                            </div>
-                        </li>
-                        <li data-task="saturday-1" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
-                            <div class="flex items-start">
-                                <input type="checkbox" id="saturday-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
-                                <label for="saturday-1-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Após as 12:00: **LAZER GARANTIDO!** (Você mereceu).</label>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                <!-- DOMINGO -->
-                <div class="bg-gray-800 p-5 rounded-xl shadow-lg border-l-4 border-green-500 task-item">
-                    <h3 class="text-xl font-bold text-green-400 mb-2">DOMINGO</h3>
-                    <p class="text-sm text-gray-400 mb-3">LIVRE | Foco: Descanso Total</p>
-                    <ul class="space-y-2">
-                        <li data-task="sunday-0" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
-                             <div class="flex items-start">
-                                <input type="checkbox" id="sunday-0-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
-                                <label for="sunday-0-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Recarregar energias e preparar-se mentalmente para a escola/semana.</label>
-                            </div>
-                        </li>
-                        <li data-task="sunday-1" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
-                            <div class="flex items-start">
-                                <input type="checkbox" id="sunday-1-check" class="mr-2 mt-1 form-checkbox h-4 w-4 text-green-600 rounded" onclick="toggleTask(this)">
-                                <label for="sunday-1-check" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">Nenhuma tarefa de marketing obrigatória!</label>
-                            </div>
-                        </li>
-                    </ul>
+        // 2. Criar o novo registro
+        const newRecord = {
+            id: Date.now(),
+            date: new Date().toLocaleDateString('pt-BR'),
+            percentage: percentage,
+            completed: completedCount,
+            total: totalCount,
+            message: `Consistência de ${percentage}% (Base: ${completedCount} de 15 tarefas)`
+        };
+
+        // 3. Salvar o histórico e resetar a rotina em uma transação para garantir a atomicidade
+        try {
+            await runTransaction(db, async (transaction) => {
+                const historyRef = getHistoryDocRef();
+                const routineRef = getRoutineDocRef();
+
+                // a) Atualizar Histórico (apenas se houver tarefas concluídas)
+                if (completedCount > 0) {
+                    const historyDoc = await transaction.get(historyRef);
+                    let currentHistory = historyDoc.exists() ? historyDoc.data().history : [];
+                    currentHistory.unshift(newRecord); // Adicionar o novo registro no início
+                    transaction.set(historyRef, { history: currentHistory }, { merge: true });
+                }
+
+                // b) Resetar Rotina
+                const resetRoutineData = JSON.parse(JSON.stringify(initialRoutineBlueprint));
+                transaction.set(routineRef, { routine: resetRoutineData });
+            });
+            
+            document.getElementById('save-message').className = 'text-green-400 font-bold';
+            document.getElementById('save-message').innerText = `Semana Finalizada! ${percentage}% de disciplina registrada. Rotina Resetada.`;
+            setTimeout(() => document.getElementById('save-message').innerText = '', 4000);
+
+        } catch (error) {
+            console.error("Erro na transação de salvar/resetar:", error);
+            document.getElementById('save-message').className = 'text-red-400 font-bold';
+            document.getElementById('save-message').innerText = 'ERRO ao finalizar a semana. Tente novamente.';
+            setTimeout(() => document.getElementById('save-message').innerText = '', 4000);
+        }
+    };
+    
+    // --- Componentes de Layout e Seções ---
+
+    const renderHeader = () => {
+        const { completedCount, totalCount, percentage } = calculateScore(currentRoutine);
+        
+        return `
+            <div class="p-6 bg-gray-900 text-white rounded-t-xl shadow-lg">
+                <h1 class="text-3xl font-extrabold text-indigo-400 mb-1">PLANO DE FOCO - V20.0 (Com Histórico)</h1>
+                <p class="text-lg font-medium text-gray-300">Liberdade Financeira até os 20 Anos</p>
+                <div class="mt-4 p-3 bg-indigo-900/50 rounded-lg text-sm">
+                    <p class="font-bold text-indigo-300">Progresso da Semana Atual:</p>
+                    <p class="text-gray-200 font-bold mt-1 text-xl">${percentage}% de Disciplina (${completedCount}/${totalCount} Tarefas)</p>
+                    <p class="text-gray-200 font-bold mt-2">Horário Fixo: <span class="text-yellow-400">15:00h às 18:00h</span> (3 horas de Deep Work)</p>
                 </div>
             </div>
-        </div>
-    </div>
+        `;
+    };
 
-    <script>
-        // Data Structure for Routine (Updated for 3 products and 6 posts - NOVO HORÁRIO)
-        const routineData = [
-            { day: 'SEGUNDA', color: 'red', tasks: [
-                { time: '15:00 - 15:45', focus: 'Pesquisa Rápida (P1 e P2)', product: 'P1/P2', task: 'Encontrar 5 tópicos e 5 ganchos de conteúdo para VPN e 5 para o Produto Nacional.' },
-                { time: '15:45 - 16:30', focus: 'Roteiro (P3) - Mód. 1', product: 'P3: Milhas/Próprio', task: 'Estruturar o Roteiro 1: Copy de Alto Nível e Ganchos (Deep Work para o seu Infoproduto).' },
-                { time: '16:30 - 17:15', focus: 'Roteiro (P3) - Mód. 2', product: 'P3: Milhas/Próprio', task: 'Estruturar o Roteiro 2: Storytelling e CTA (Call to Action) de Alta Conversão.' },
-                { time: '17:15 - 18:00', focus: 'Funil & Copy (P3)', product: 'P3: Milhas/Próprio', task: '**REVISÃO CRÍTICA:** Revisar a Copy do Link na Bio / Landing Page do P3. (Otimizar taxa de conversão do funil).' }
-            ]},
-            { day: 'TERÇA', color: 'yellow', tasks: [
-                { time: '15:00 - 16:30', focus: 'Produção Lote (P1 e P2)', product: 'P1/P2', task: 'Produzir e editar os 2 Posts de VPN e os 2 Posts do Produto Nacional.' },
-                { time: '16:30 - 18:00', focus: 'Agendamento em Bloco', product: 'P1 e P2', task: 'Revisar links/legendas/hashtags e AGENDAR todos os 4 posts de P1 e P2 (Volume).' }
-            ]},
-            { day: 'QUARTA', color: 'lime', tasks: [
-                { time: '15:00 - 16:00', focus: 'Deep Work (P3) - Mód. 1', product: 'P3: Milhas/Próprio', task: 'Criação do Post 1: Conteúdo de Valor/Tutorial (Produção de Alta Qualidade do seu Ativo).' },
-                { time: '16:00 - 17:00', focus: 'Deep Work (P3) - Mód. 2', product: 'P3: Milhas/Próprio', task: 'Criação do Post 2: Prova Social/Storytelling (Produção de Alta Qualidade do seu Ativo).' },
-                { time: '17:00 - 18:00', focus: 'Agendamento Final (P3) & Estoque', product: 'P3/Estoque', task: 'Revisar e AGENDAR os 2 posts do seu Infoproduto Próprio. Começar a gerar 1 post extra (Estoque).' }
-            ]},
-            { day: 'QUINTA', color: 'blue', tasks: [
-                { time: '15:00 - 15:45', focus: 'Coleta de Dados P1 e P2', product: 'P1/P2', task: '**COLETAR:** CTR (Cliques/Impressão) dos links, Engajamento e Visualizações (Base do Afiliado).' },
-                { time: '15:45 - 16:30', focus: 'Coleta de Dados P3', product: 'P3: Milhas/Próprio', task: '**COLETAR:** Taxa de conversão do Link na Bio e Comentários/DMs (Base do Lançamento).' },
-                { time: '16:30 - 17:15', focus: 'Ação Corretiva', product: 'TODOS', task: '**REAGIR:** Definir a principal mudança de Copy/Roteiro para a próxima semana baseada nos dados coletados.' },
-                { time: '17:15 - 18:00', focus: 'Tráfego de Perfil', product: 'P1 (VPN) e P3 (Milhas)', task: 'Interagir com 15 perfis concorrentes grandes dos nichos (Ex: 8 Milhas, 7 VPN).' }
-            ]},
-            { day: 'SEXTA', color: 'indigo', tasks: [
-                { time: '15:00 - 16:00', focus: 'Gestão Financeira & Alavancagem', product: 'Milhas/Invest/Equipe', task: '**DELEGAR:** Revisar lucros, definir REINVESTIMENTO e distribuir tarefas de edição/logística para a equipe.' },
-                { time: '16:00 - 17:00', focus: 'Estoque de Segurança', product: 'P1/P2/P3', task: 'Produzir 1 post extra (qualquer nicho) para o estoque de segurança (contra imprevistos).' },
-                { time: '17:00 - 18:00', focus: 'Leitura Estratégica', product: 'Conhecimento', task: 'Ler 30 páginas de um livro/artigo sobre Copywriting, Estratégia ou Finanças.' },
-                { time: '18:00 em diante', focus: 'LAZER GARANTIDO/ACADEMIA', product: 'LIVRE', task: '**DESCONEXÃO E DIVERSÃO!** Tudo pronto, comece a focar no bem-estar.' }
-            ]}
+    const renderCreationGoals = (p1Count, p3Count) => {
+        const creationGoals = [
+            { label: 'Post 1: VPN (Cash Flow)', product: 'P1', index: 0 },
+            { label: 'Post 2: VPN (Cash Flow)', product: 'P1', index: 1 },
+            { label: 'Post 3: VPN (Cash Flow)', product: 'P1', index: 2 },
+            { label: 'Post 4: Assessoria (Liberdade)', product: 'P3', index: 3 },
+            { label: 'Post 5: Assessoria (Liberdade)', product: 'P3', index: 4 },
+            { label: 'Post 6: Assessoria (Liberdade)', product: 'P3', index: 5 },
         ];
         
-        // Função para renderizar a rotina na UI
-        function renderSchedule() {
-            const container = document.getElementById('weekly-schedule');
-            container.innerHTML = ''; 
+        // LÓGICA DE CÁLCULO DE METAS (IMPLEMENTADA)
+        const calculateCreationGoals = (routine) => {
+            let p1CompletedCount = 0;
+            let p3CompletedCount = 0;
 
-            routineData.forEach((dayData, dayIndex) => {
-                const dayColor = dayData.color;
-                const card = document.createElement('div');
-                card.className = `bg-gray-800 p-5 rounded-xl shadow-lg border-l-4 border-${dayColor}-500 task-item`;
-                
-                let taskListHTML = dayData.tasks.map((task, taskIndex) => `
-                    <li data-task="${dayData.day.toLowerCase()}-${taskIndex}" class="flex flex-col mb-3 p-2 rounded-md bg-gray-700/50">
-                        <div class="flex items-start">
-                            <input type="checkbox" id="${dayData.day.toLowerCase()}-${taskIndex}" 
-                                class="mr-2 mt-1 form-checkbox h-4 w-4 text-${dayColor}-600 rounded" 
-                                onclick="toggleTask(this)">
-                            <label for="${dayData.day.toLowerCase()}-${taskIndex}" class="text-sm font-medium text-gray-300 flex-1 cursor-pointer">${task.task}</label>
-                        </div>
-                        <div class="ml-6 text-xs text-gray-400 mt-1">
-                            <span class="font-bold mr-2">${task.time}:</span> ${task.focus} (${task.product})
-                        </div>
-                    </li>
-                `).join('');
+            const days = ['Quarta']; // Só checa Quarta, pois é o dia CHAVE do Agendamento
+            days.forEach(day => {
+                if (routine[day]) {
+                    const p1Task = routine[day].find(t => t.task.includes('AGENDAMENTO P1'));
+                    if (p1Task && p1Task.completed) p1CompletedCount = 3; 
 
-                card.innerHTML = `
-                    <h3 class="text-xl font-bold text-${dayData.color}-400 mb-3">${dayData.day}</h3>
-                    <ul class="space-y-2">${taskListHTML}</ul>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // Função chamada ao clicar no checkbox
-        function toggleTask(checkbox) {
-            const listItem = checkbox.closest('li');
-            
-            // Chama a função de salvamento do Firebase (definida no bloco <script type="module">)
-            if (window.saveProgress) {
-                // O salvamento agora ocorre aqui e o update da classe é feito no saveProgress para garantir a sincronia
-                window.saveProgress(listItem.getAttribute('data-task'), checkbox.checked);
-                
-                // Atualização visual imediata
-                if (checkbox.checked) {
-                    listItem.classList.add('completed');
-                } else {
-                    listItem.classList.remove('completed');
+                    const p3Task = routine[day].find(t => t.task.includes('AGENDAMENTO P3'));
+                    if (p3Task && p3Task.completed) p3CompletedCount = 3; 
                 }
+            });
+
+            return { p1CompletedCount, p3CompletedCount };
+        };
+
+        const { p1CompletedCount: currentP1Count, p3CompletedCount: currentP3Count } = calculateCreationGoals(currentRoutine);
+
+
+        const goalItems = creationGoals.map((goal) => {
+            const isP1 = goal.product === 'P1';
+            const count = isP1 ? currentP1Count : currentP3Count;
+            const isCompleted = goal.index < count;
+
+            const productClass = isP1 ? 'text-indigo-300' : 'text-yellow-300';
+            const checkColor = isP1 ? 'border-indigo-500' : 'border-yellow-500';
+            const checkBg = isCompleted ? (isP1 ? 'bg-indigo-600' : 'bg-yellow-600') : 'bg-gray-600';
+            
+            return `
+                <div class="flex items-center space-x-2 w-full sm:w-1/2 lg:w-1/3 p-2">
+                    <div class="h-4 w-4 rounded-full flex items-center justify-center border-2 ${checkColor} ${checkBg} transition duration-300">
+                        ${isCompleted ? 
+                            `<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>` : 
+                            ''
+                        }
+                    </div>
+                    <span class="text-sm font-medium ${productClass} ${isCompleted ? 'line-through opacity-75' : ''}">${goal.label}</span>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="bg-gray-900 p-6 rounded-xl shadow-xl mt-6">
+                <h2 class="text-xl font-bold text-pink-400 mb-4 flex items-center">
+                    <span class="text-2xl mr-2">🧞</span> Metas de Criação (Progresso Semanal)
+                </h2>
+                <p class="text-gray-400 mb-4 text-sm">Metas de volume: **3 posts (P1) + 3 posts (P3)**. Marcam automaticamente ao concluir a Quarta-feira (Agendamento).</p>
+                <div class="flex flex-wrap -mx-2">
+                    ${goalItems}
+                </div>
+            </div>
+        `;
+    };
+
+    const renderHistory = () => {
+        if (historyRecords.length === 0) {
+            return `
+                <div class="bg-gray-800 p-4 rounded-lg text-center text-gray-500 italic">
+                    Nenhum histórico de disciplina encontrado. Finalize sua primeira semana!
+                </div>
+            `;
+        }
+
+        const historyItems = historyRecords.slice(0, 5).map(record => {
+            const colorClass = record.percentage >= 80 ? 'text-green-400' : (record.percentage >= 60 ? 'text-yellow-400' : 'text-red-400');
+            const icon = record.percentage >= 80 ? '⭐' : '📋';
+
+            return `
+                <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg border-l-4 border-gray-700 hover:bg-gray-700/50 transition duration-200">
+                    <span class="text-sm text-gray-400 font-medium">${icon} Semana de ${record.date}</span>
+                    <span class="text-xl font-extrabold ${colorClass}">${record.percentage}%</span>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="bg-gray-900 p-6 rounded-xl shadow-xl mt-6">
+                <h2 class="text-xl font-bold text-yellow-400 mb-4 flex items-center">
+                    <span class="text-2xl mr-2">📋</span> Histórico de Disciplina Semanal (Santo Agostinho)
+                </h2>
+                <p class="text-gray-400 mb-4 text-sm">Seu registro de consistência: ${historyRecords.length} semanas completas salvas.</p>
+                <div class="space-y-3">
+                    ${historyItems}
+                </div>
+                <div class="mt-4 p-2 bg-gray-800 rounded-lg text-center text-gray-500 italic text-xs">
+                    Usuário ID: ${userId}
+                </div>
+            </div>
+        `;
+    };
+
+    const renderWeekend = () => {
+        const isSexta = new Date().getDay() === 5; // 5 é Sexta-feira
+        const buttonClass = isSexta ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-600 hover:bg-gray-700';
+
+        return `
+            <div class="bg-gray-900 p-6 rounded-xl shadow-xl mt-6">
+                <h2 class="text-xl font-bold text-green-400 mb-4 flex items-center">
+                    <span class="text-2xl mr-2">🔋</span> Fim de Semana e Lazer (Recarregar Energias)
+                </h2>
+                
+                <div id="save-message" class="text-center mb-4 h-6 text-sm"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- SÁBADO -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                        <h3 class="text-lg font-extrabold text-white mb-2">SÁBADO</h3>
+                        <p class="text-sm text-gray-400 mb-3">10:00 - 12:00 | Foco: Estratégia e Reinvestimento</p>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li class="flex items-center font-bold text-yellow-400">
+                                <span class="mr-2 text-yellow-400">⭐</span> Após as 12:00: **LAZER GARANTIDO** (Você mereceu).
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- DOMINGO -->
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                        <h3 class="text-lg font-extrabold text-white mb-2">DOMINGO</h3>
+                        <p class="text-sm text-gray-400 mb-3">LIVRE | Foco: Descanso Total</p>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li class="flex items-center text-red-400 italic">
+                                <span class="mr-2 text-red-400">❌</span> Nenhuma tarefa de marketing obrigatória!
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <button 
+                    onclick="window.saveHistoryAndResetWeek()" 
+                    class="w-full mt-6 py-3 px-4 rounded-xl font-extrabold text-white transition duration-300 transform hover:scale-[1.01] shadow-xl ${buttonClass}"
+                    aria-label="Finalizar e Salvar Histórico Semanal"
+                >
+                    FINALIZAR SEMANA & REINICIAR TAREFAS
+                </button>
+            </div>
+        `;
+    };
+
+    // Função principal de Renderização
+    const renderRoutine = () => {
+        const container = document.getElementById('routine-container');
+        if (!container || !currentRoutine.Segunda) return; // Garante que a rotina foi carregada
+        
+        const daysOrder = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta'];
+        let html = '';
+
+        // 1. Título e Meta
+        html += renderHeader();
+
+        // 2. Histórico (AGORA FUNCIONAL)
+        html += renderHistory();
+        
+        // 3. Metas de Criação (RENDERIZADO DINAMICAMENTE)
+        html += renderCreationGoals();
+        
+        // 4. Rotina Diária (Segunda a Sexta) - VISÃO EM BLOCOS VERTICAIS
+        html += `<div class="p-4 sm:p-6 space-y-6 bg-gray-800 rounded-xl mt-6">`;
+        
+        daysOrder.forEach(day => {
+            const tasks = currentRoutine[day] || [];
+            
+            // Determina a cor de destaque e ícone para o Novo Foco
+            let headerClass = 'bg-gray-700 text-gray-100';
+            let icon = '⚡️';
+            if (day === 'Segunda') {
+                headerClass = 'bg-indigo-600 text-white'; // COPY
+                icon = '✍️';
+            } else if (day === 'Terca') {
+                headerClass = 'bg-pink-600 text-white'; // PRODUÇÃO
+                icon = '🎬';
+            } else if (day === 'Quarta') {
+                headerClass = 'bg-green-600 text-white'; // OTIMIZAÇÃO & AGENDAMENTO
+                icon = '✅';
+            } else if (day === 'Quinta') {
+                headerClass = 'bg-red-600 text-white'; // ANÁLISE & AÇÃO CORRETIVA
+                icon = '📊';
+            } else if (day === 'Sexta') {
+                headerClass = 'bg-yellow-600 text-white'; // ESTRATÉGIA & FINANÇAS
+                icon = '💸';
             }
-        }
 
-        // Função principal para carregar o progresso (chamada após o login no Firebase)
-        window.checkAndLoadTasks = function() {
-            renderSchedule();
-            window.loadProgress();
-        }
 
-        // Inicializa a rotina ao carregar a página
-        window.onload = function() {
-            // A inicialização do Firebase está no bloco de módulo e chama renderSchedule/loadProgress após o login.
-            // Apenas renderiza a estrutura inicial antes do Firebase carregar.
-            renderSchedule(); 
-        }
-    </script>
-</body>
-</html>
+            html += `
+                <div class="flex flex-col bg-gray-900 rounded-lg shadow-2xl overflow-hidden">
+                    <div class="${headerClass} p-4 text-left font-extrabold tracking-wider flex items-center justify-between">
+                        <span class="text-2xl">${icon} ${day.toUpperCase()}</span>
+                        <span class="text-sm font-normal text-white/80">15:00 - 18:00 (3h de Foco)</span>
+                    </div>
+                    <div class="p-4 sm:p-6 space-y-4 flex-grow">
+            `;
+            
+            tasks.forEach((task, index) => {
+                const isCompleted = task.completed;
+                const statusClass = isCompleted ? 'bg-green-700 hover:bg-green-600' : 'bg-red-700 hover:bg-red-600';
+                const textClass = isCompleted ? 'line-through text-gray-400' : 'text-gray-100';
+                
+                // Produto e Conta
+                let accountTag = '';
+                if (task.account === 'Cash Flow') {
+                    accountTag = `<span class="bg-indigo-900 text-indigo-300 px-3 py-1 text-xs rounded-full font-bold">CASH FLOW (VPN)</span>`;
+                } else if (task.account === 'Liberdade') {
+                    accountTag = `<span class="bg-yellow-700 text-yellow-100 px-3 py-1 text-xs rounded-full font-bold">LIBERDADE (MILHAS)</span>`;
+                } else {
+                    accountTag = `<span class="bg-blue-600 text-blue-100 px-3 py-1 text-xs rounded-full font-bold">GERAL / GESTÃO</span>`;
+                }
+
+                html += `
+                    <div class="flex items-start space-x-4 p-4 border border-gray-700 rounded-xl bg-gray-800 transition duration-300 hover:bg-gray-700/50">
+                        <button 
+                            onclick="toggleTask('${day}', ${index})" 
+                            class="flex-shrink-0 w-8 h-8 rounded-full transition duration-150 ease-in-out flex items-center justify-center ${statusClass} border-2 border-white/20 shadow-md"
+                            aria-label="Marcar como concluída"
+                        >
+                            ${isCompleted ? 
+                                `<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>` : 
+                                `<svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>`
+                            }
+                        </button>
+                        <div class="flex-grow min-w-0">
+                            <div class="flex justify-between items-center mb-1">
+                                <p class="text-sm font-semibold text-gray-400">${task.time}</p>
+                                ${accountTag}
+                            </div>
+                            <p class="font-bold ${textClass} text-base">${task.task}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `</div>`; // Fechar o container da rotina
+        
+        // 5. Fim de Semana
+        html += renderWeekend();
+
+        container.innerHTML = html;
+    };
+
+    // Expondo as funções para o HTML
+    window.toggleTask = toggleTask;
+    window.saveHistoryAndResetWeek = saveHistoryAndResetWeek;
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', initializeFirebase);
+</script>
+
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #1f2937; /* Gray-800 */
+    }
+    /* Estilos para o scrollbar (opcional, mas melhora a estética) */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background-color: #4b5563; /* Gray-600 */
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-track {
+        background-color: #1f2937; /* Gray-800 */
+    }
+    /* Removendo a aparência padrão do checkbox e customizando para o botão */
+    .form-checkbox {
+        appearance: none;
+        -webkit-appearance: none;
+    }
+</style>
+
+<div id="routine-container" class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- O conteúdo da rotina será renderizado aqui -->
+</div>
