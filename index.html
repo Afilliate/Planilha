@@ -1,113 +1,295 @@
-<html>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    
-    // Configurações e variáveis globais do Canvas (MANDATÓRIO)
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-    let app, db, auth;
-    let userId = 'loading';
-    let isAuthReady = false;
-    let historyRecords = []; // Array para armazenar o histórico semanal
-    let currentRoutine = {}; // Variável para armazenar a rotina da semana atual
-
-    // Estruturas de dados (Conteúdo do V19.0 - Refatorado por Blocos de Foco)
-    const initialRoutineBlueprint = {
-        'Segunda': [
-            // FOCO PRINCIPAL DO DIA: CRIAÇÃO DE COPY E ROTEIROS (TEXTO)
-            { time: '15:00 - 16:00', task: '**CRIAÇÃO DE COPY P1 (60m):** Escrever 3 Ganchos Persuasivos de 10s (Foco em Objeção/Curiosidade)', product: 'P1', completed: false, account: 'Cash Flow' },
-            { time: '16:00 - 17:00', task: '**ROTEIRO P3 (60m):** Criar 1 Roteiro Completo para Storytelling de Prova Social/Autoridade', product: 'P3', completed: false, account: 'Liberdade' },
-            { time: '17:00 - 18:00', task: '**COPY P3 (60m):** Escrita de 2 Ganchos de Venda Rápida (para usar em Stories ou Carrosséis)', product: 'P3', completed: false, account: 'Liberdade' }
-        ],
-        'Terca': [
-            // FOCO PRINCIPAL DO DIA: CRIAÇÃO DE ATIVOS (PRODUÇÃO E EDIÇÃO)
-            { time: '15:00 - 16:00', task: '**PRODUÇÃO P1 (60m):** Gravação e Edição Final em Lote de 3 Vídeos Curvos (Usa Copy de Segunda)', product: 'P1', completed: false, account: 'Cash Flow' },
-            { time: '16:00 - 17:00', task: '**PRODUÇÃO P3 (60m):** Design do Carrossel (P2) e Gravação/Edição do Vídeo Reação (Usa Roteiro de Segunda)', product: 'P3', completed: false, account: 'Liberdade' },
-            { time: '17:00 - 18:00', task: '**ESTOQUE GERAL (60m):** Finalizar 1 Ativo Rápido (Vídeo de 30s ou Post de Dica) para o Estoque de Segurança', product: 'Geral', completed: false, account: 'Ambas' }
-        ],
-        'Quarta': [
-            // FOCO PRINCIPAL DO DIA: OTIMIZAÇÃO & AGENDAMENTO (TAREFA CHAVE P/ PROGRESSO)
-            { time: '15:00 - 16:00', task: '**AGENDAMENTO P1 (60m):** Otimização (Títulos/Tags/SEO) e Programação de 3 Posts VPN (Tarefa CHAVE)', product: 'P1', completed: false, account: 'Cash Flow' }, 
-            { time: '16:00 - 17:00', task: '**AGENDAMENTO P3 (60m):** Revisão Final, Otimização e Programação de 3 Posts Assessoria (Tarefa CHAVE)', product: 'P3', completed: false, account: 'Liberdade' }, 
-            { time: '17:00 - 18:00', task: '**ESTOQUE ROTEIROS (60m):** Criar 3 Novos Roteiros/Ganchos para a próxima semana', product: 'Geral', completed: false, account: 'Ambas' }
-        ],
-        'Quinta': [
-            // FOCO PRINCIPAL DO DIA: ANÁLISE E AÇÃO CORRETIVA RÁPIDA
-            { time: '15:00 - 16:30', task: '**ANÁLISE DE DADOS (90m):** Coleta de Dados P1 e P3 (Cliques, Engajamento, CTR) e Diagnóstico de Falhas', product: 'Geral', completed: false, account: 'Ambas' },
-            { time: '16:30 - 17:15', task: '**AÇÃO CORRETIVA P3 (45m):** Criar V2 de Copy/Gancho para Teste Imediato (Baseado na Análise)', product: 'P3', completed: false, account: 'Liberdade' },
-            { time: '17:15 - 18:00', task: '**ENGAGEMENT P3 (45m):** Interação (15 Perfis de Nicho) + Criação de 1 Story Estratégico (Venda Quente)', product: 'P3', completed: false, account: 'Liberdade' }
-        ],
-        'Sexta': [
-            // FOCO PRINCIPAL DO DIA: PLANEJAMENTO ESTRATÉGICO E LIBERDADE
-            { time: '15:00 - 16:00', task: '**PLANEJAMENTO FINANCEIRO (60m):** Reinvestimento (70% Lucro) e Criação de Fundo de Teste', product: 'P1', completed: false, account: 'Cash Flow' },
-            { time: '16:00 - 17:00', task: '**MODELAGEM DE INVESTIMENTO (60m):** Análise de Milhas/Bancos (30% Lucro - Renda Passiva)', product: 'Geral', completed: false, account: 'Liberdade' },
-            { time: '17:00 - 18:00', task: '**PREPARAÇÃO SEMANAL (60m):** Revisão de Checklist e Definição da Estrutura de Ganchos para a Próxima Semana', product: 'Geral', completed: false, account: 'Ambas' }
-        ]
-    };
-
-    // Inicialização do Firebase e Autenticação
-    const initializeFirebase = async () => {
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            if (initialAuthToken) {
-                await signInWithCustomToken(auth, initialAuthToken);
-            } else {
-                await signInAnonymously(auth);
-            }
-
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                } else {
-                    userId = crypto.randomUUID(); // Fallback para anônimo
-                }
-                isAuthReady = true;
-                console.log(`Firebase Ready. User ID: ${userId}`);
-                loadData();
-            });
-
-        } catch (error) {
-            console.error("Firebase initialization failed:", error);
-            userId = crypto.randomUUID();
-            isAuthReady = true;
-            loadData(); 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limite com Buraco - Visualização Interativa</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-    };
 
-    // Funções de manipulação do Firestore
-    const getRoutineDocRef = () => doc(db, `/artifacts/${appId}/users/${userId}/daily_routine`, 'weeklyPlan');
-    const getHistoryDocRef = () => doc(db, `/artifacts/${appId}/users/${userId}/daily_routine`, 'history_data');
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(145deg, #f0f2f5 0%, #d9dee5 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
 
-    const loadData = () => {
-        if (!isAuthReady) return;
-        
-        // Listener para a rotina da semana atual
-        onSnapshot(getRoutineDocRef(), (docSnapshot) => {
-            if (docSnapshot.exists()) {
-                currentRoutine = docSnapshot.data().routine;
-            } else {
-                currentRoutine = JSON.parse(JSON.stringify(initialRoutineBlueprint));
-                saveRoutine(currentRoutine);
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #1a237e;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #333;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            background: #fafafa;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        button {
+            background: #283593;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background: #1a237e;
+        }
+
+        button.active {
+            background: #ff8f00;
+        }
+
+        .explanation {
+            background: #e8eaf6;
+            border-left: 4px solid #3f51b5;
+            padding: 14px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: #d84315;
+        }
+
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 1.3rem;
             }
-            renderRoutine();
-        }, (error) => {
-            console.error("Erro ao carregar rotina:", error);
-            currentRoutine = JSON.parse(JSON.stringify(initialRoutineBlueprint));
-            renderRoutine();
+            button {
+                padding: 8px 14px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Limite ≠ Valor de y</h1>
+        <p>Observe o gráfico de <strong>f(x) = (x² - 4)/(x - 2)</strong></p>
+
+        <canvas id="graphCanvas" width="500" height="400"></canvas>
+
+        <div class="controls">
+            <button id="btnShowHole" class="active">Mostrar buraco</button>
+            <button id="btnShowContinuous">Comparar com contínua</button>
+        </div>
+
+        <div class="explanation" id="explanationText">
+            <p>A função <strong>não está definida</strong> em <span class="highlight">x = 2</span>, pois resultaria em <span class="highlight">0/0</span>.</p>
+            <p>No gráfico, o ponto <span class="highlight">(2, 4)</span> não existe — mas o limite quando x→2 é <strong>4</strong>.</p>
+            <p>Por isso dizemos que o limite é o valor para onde y <em>tende</em>, mas não o valor exato de y naquele x.</p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Mapeamento de coordenadas matemáticas para pixels
+        const xMin = -2, xMax = 6, yMin = -2, yMax = 8;
+        function toCanvasX(x) {
+            return ((x - xMin) / (xMax - xMin)) * width;
+        }
+        function toCanvasY(y) {
+            return height - ((y - yMin) / (yMax - yMin)) * height;
+        }
+
+        function drawAxes() {
+            ctx.strokeStyle = '#999';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            // eixo X
+            ctx.moveTo(0, toCanvasY(0));
+            ctx.lineTo(width, toCanvasY(0));
+            ctx.stroke();
+            // eixo Y
+            ctx.beginPath();
+            ctx.moveTo(toCanvasX(0), 0);
+            ctx.lineTo(toCanvasX(0), height);
+            ctx.stroke();
+            // rótulos
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.fillText('x', width - 15, toCanvasY(0) - 8);
+            ctx.fillText('y', toCanvasX(0) + 8, 15);
+            ctx.fillText('0', toCanvasX(0) + 5, toCanvasY(0) - 5);
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5;
+            for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+                ctx.beginPath();
+                ctx.moveTo(toCanvasX(x), 0);
+                ctx.lineTo(toCanvasX(x), height);
+                ctx.stroke();
+            }
+            for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, toCanvasY(y));
+                ctx.lineTo(width, toCanvasY(y));
+                ctx.stroke();
+            }
+        }
+
+        function drawFunctionWithHole() {
+            // Desenha f(x) = x + 2, exceto em x = 2
+            ctx.strokeStyle = '#1e88e5';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            let first = true;
+            for (let px = 0; px <= width; px++) {
+                const x = xMin + (px / width) * (xMax - xMin);
+                if (Math.abs(x - 2) < 0.01) continue; // pula o buraco
+                const y = x + 2;
+                const canvasX = toCanvasX(x);
+                const canvasY = toCanvasY(y);
+                if (first) {
+                    ctx.moveTo(canvasX, canvasY);
+                    first = false;
+                } else {
+                    ctx.lineTo(canvasX, canvasY);
+                }
+            }
+            ctx.stroke();
+
+            // Desenha buraco em (2,4)
+            const holeX = toCanvasX(2);
+            const holeY = toCanvasY(4);
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = '#d32f2f';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(holeX, holeY, 7, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+
+            // Marca o ponto do limite (2,4)
+            ctx.fillStyle = '#d32f2f';
+            ctx.beginPath();
+            ctx.arc(holeX, holeY, 2.5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 13px Arial';
+            ctx.fillText('Limite = 4', holeX + 10, holeY - 10);
+        }
+
+        function drawContinuousFunction() {
+            // Desenha f(x) = x + 2 contínua
+            ctx.strokeStyle = '#43a047';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let px = 0; px <= width; px++) {
+                const x = xMin + (px / width) * (xMax - xMin);
+                const y = x + 2;
+                const canvasX = toCanvasX(x);
+                const canvasY = toCanvasY(y);
+                if (px === 0) ctx.moveTo(canvasX, canvasY);
+                else ctx.lineTo(canvasX, canvasY);
+            }
+            ctx.stroke();
+
+            // Ponto preenchido em (2,4)
+            const pointX = toCanvasX(2);
+            const pointY = toCanvasY(4);
+            ctx.fillStyle = '#43a047';
+            ctx.beginPath();
+            ctx.arc(pointX, pointY, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 13px Arial';
+            ctx.fillText('f(2) = 4', pointX + 10, pointY - 10);
+        }
+
+        function render(showHole = true) {
+            ctx.clearRect(0, 0, width, height);
+            drawGrid();
+            drawAxes();
+            if (showHole) {
+                drawFunctionWithHole();
+            } else {
+                drawContinuousFunction();
+            }
+        }
+
+        // Alternância entre visualizações
+        const btnHole = document.getElementById('btnShowHole');
+        const btnContinuous = document.getElementById('btnShowContinuous');
+        const explanation = document.getElementById('explanationText');
+
+        btnHole.addEventListener('click', () => {
+            render(true);
+            btnHole.classList.add('active');
+            btnContinuous.classList.remove('active');
+            explanation.innerHTML = `<p>A função <strong>não está definida</strong> em <span class="highlight">x = 2</span>, pois resultaria em <span class="highlight">0/0</span>.</p>
+            <p>No gráfico, o ponto <span class="highlight">(2, 4)</span> não existe — mas o limite quando x→2 é <strong>4</strong>.</p>
+            <p>Por isso dizemos que o limite é o valor para onde y <em>tende</em>, mas não o valor exato de y naquele x.</p>`;
         });
 
-        // Listener para o histórico
-        onSnapshot(getHistoryDocRef(), (docSnapshot) => {
-            if (docSnapshot.exists() && docSnapshot.data().history) {
+        btnContinuous.addEventListener('click', () => {
+            render(false);
+            btnContinuous.classList.add('active');
+            btnHole.classList.remove('active');
+            explanation.innerHTML = `<p>Agora mostramos a função <strong>f(x) = x + 2</strong>, que é contínua.</p>
+            <p>Neste caso, o limite em x = 2 é igual ao valor de y: <span class="highlight">f(2) = 4</span>.</p>
+            <p>Compare com o gráfico anterior: o buraco foi preenchido, tornando a função contínua.</p>`;
+        });
+
+        // Render inicial
+        render(true);
+    </script>
+</body>
+</html>            if (docSnapshot.exists() && docSnapshot.data().history) {
                 historyRecords = docSnapshot.data().history;
             } else {
                 historyRecords = [];
